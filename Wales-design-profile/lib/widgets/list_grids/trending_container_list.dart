@@ -137,7 +137,7 @@ class _TrendingContainerListState extends State<TrendingContainerList> {
 
   void goTo() {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) {
-      return const PropertyDetails();
+      return PropertyDetails();
     }));
   }
 
