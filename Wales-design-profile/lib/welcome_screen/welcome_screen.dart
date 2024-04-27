@@ -9,6 +9,8 @@ import '../app_theme.dart';
 import '../check_profile.dart';
 import '../constants.dart';
 import '../profile/forget_password.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import '../widgets/custom_button.dart';
 import '../widgets/custom_rich_text.dart';
 import 'package:google_sign_in/google_sign_in.dart';
@@ -47,13 +49,28 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     );
   }
 
-  void login() {
-    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) {
-      return const BottomNavigation();
-    }), (route) => false);
-    // setState(() {
-    //   loading = true;
-    // });
+  void login() async {
+    setState(() {
+      loading = true;
+    });
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('userId');
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    DocumentReference userDocRef = firestore.collection('users').doc(userId);
+    DocumentSnapshot userDoc = await userDocRef.get();
+    if (userDoc.exists) {
+      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+
+      if (userData!['email'] == emailController.text &&
+          userData!['password'] == passController.text) {
+        Navigator.of(context).pushAndRemoveUntil(
+            MaterialPageRoute(builder: (_) {
+          return const CheckProfile();
+        }), (route) => false);
+      }
+    } else {
+      Constants.showMessage(context, "user not exists");
+    }
     // FirebaseAuth.instance
     //     .signInWithEmailAndPassword(
     //   email: emailController.text,
@@ -103,6 +120,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           });
 
           SaveduserId = userId;
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userId', SaveduserId);
           print('User data saved to Firestore successfully!');
         } else {
           print('User data already exists in Firestore.');
