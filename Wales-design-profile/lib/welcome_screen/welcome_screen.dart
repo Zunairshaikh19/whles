@@ -67,6 +67,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
             MaterialPageRoute(builder: (_) {
           return const CheckProfile();
         }), (route) => false);
+      } else {
+        Constants.showMessage(context, "Wrong Credentials");
       }
     } else {
       Constants.showMessage(context, "user not exists");
@@ -127,6 +129,9 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           print('User data already exists in Firestore.');
         }
         SaveduserId = userId;
+
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        await prefs.setString('userId', SaveduserId);
       } else {
         print('No user signed in.');
       }
