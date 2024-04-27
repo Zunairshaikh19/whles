@@ -29,6 +29,7 @@ class _UserProfileViewState extends State<UserProfileView> {
   String _pass = "";
   String _email = "";
   String _name = "";
+  String? profilePicture = "";
 
   @override
   void initState() {
@@ -48,9 +49,11 @@ class _UserProfileViewState extends State<UserProfileView> {
     try {
       DocumentReference userDocRef = firestore.collection('users').doc(userId);
       DocumentSnapshot userDoc = await userDocRef.get();
+      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
 
       if (userDoc.exists) {
         print(userDoc.data());
+        profilePicture = userData!['profilePicture'];
         return userDoc.data()
             as Map<String, dynamic>?; // Cast to the correct type
       } else {
@@ -72,19 +75,82 @@ class _UserProfileViewState extends State<UserProfileView> {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    setState(() {
-      if (pickedFile != null) {
-        _pickedFile = pickedFile as PickedFile?;
-        _image = File(pickedFile.path);
-        // Convert XFile to File
-        final file = File(_pickedFile!.path);
-        // Convert File to PickedFile (if needed)
-        _pickedFile = PickedFile(file.path);
-        // Now you have _pickedFile as a PickedFile
-      } else {
-        print('No image selected.');
+    if (_pickedFile != null) {
+      // Check if _pickedFile is not null
+      await _googleSignIn.signIn();
+      GoogleSignInAccount? user = _googleSignIn.currentUser;
+
+      if (user != null) {
+        String displayName = user.displayName ?? "";
+        String email = user.email ?? "";
+        String userId = user.id;
+
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userId);
+
+        String imagePath = 'users/$userId/profilePicture.jpg';
+        Reference storageReference =
+            FirebaseStorage.instance.ref().child(imagePath);
+
+        UploadTask uploadTask =
+            storageReference.putFile(File(pickedFile!.path));
+        TaskSnapshot snapshot = await uploadTask;
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        _pass == null
+            ? await userDocRef.set({
+                'displayName': _name ?? displayName,
+                'email': _email = email,
+                'userId': userId,
+                'profilePicture': downloadUrl,
+              })
+            : await userDocRef.set({
+                'displayName': _name ?? displayName,
+                'email': _email = email,
+                'userId': userId,
+                'password': _pass ?? "",
+                'profilePicture': downloadUrl,
+              });
+        Navigator.pop(context);
       }
-    });
+    } else {
+      await _googleSignIn.signIn();
+      GoogleSignInAccount? user = _googleSignIn.currentUser;
+
+      if (user != null) {
+        String displayName = user.displayName ?? "";
+        String email = user.email ?? "";
+        String userId = user.id;
+
+        FirebaseFirestore firestore = FirebaseFirestore.instance;
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userId);
+
+        String imagePath = 'users/$userId/profilePicture.jpg';
+        Reference storageReference =
+            FirebaseStorage.instance.ref().child(imagePath);
+
+        UploadTask uploadTask =
+            storageReference.putFile(File(pickedFile!.path));
+        TaskSnapshot snapshot = await uploadTask;
+        String downloadUrl = await snapshot.ref.getDownloadURL();
+        _pass == null
+            ? await userDocRef.set({
+                'displayName': _name ?? displayName,
+                'email': _email = email,
+                'userId': userId,
+                'profilePicture': downloadUrl,
+              })
+            : await userDocRef.set({
+                'displayName': _name ?? displayName,
+                'email': _email = email,
+                'userId': userId,
+                'password': _pass ?? "",
+                'profilePicture': downloadUrl,
+              });
+        Navigator.pop(context);
+      }
+    }
   }
 
   Future<void> _saveImg(File imageFile, PickedFile? pickedFile) async {
@@ -181,7 +247,6 @@ class _UserProfileViewState extends State<UserProfileView> {
           String displayName = user.displayName ?? "";
           String email = user.email ?? "";
           String userId = user.id;
-          var profilePicture = user.photoUrl;
 
           FirebaseFirestore firestore = FirebaseFirestore.instance;
           DocumentReference userDocRef =
@@ -215,7 +280,6 @@ class _UserProfileViewState extends State<UserProfileView> {
           String displayName = user.displayName ?? "";
           String email = user.email ?? "";
           String userId = user.id;
-          var profilePicture = user.photoUrl;
 
           FirebaseFirestore firestore = FirebaseFirestore.instance;
           DocumentReference userDocRef =
