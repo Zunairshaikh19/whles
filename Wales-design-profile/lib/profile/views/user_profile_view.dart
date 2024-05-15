@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:app/constants.dart';
 import 'package:app/constants/app_colors.dart';
 import 'package:app/constants/strings.dart';
 import 'package:app/constants/typography.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../Global/variable.dart';
 
 class UserProfileView extends StatefulWidget {
@@ -50,10 +52,11 @@ class _UserProfileViewState extends State<UserProfileView> {
       DocumentReference userDocRef = firestore.collection('users').doc(userId);
       DocumentSnapshot userDoc = await userDocRef.get();
       Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
-
+      SharedPreferences prefs = await Constants.getPrefs();
       if (userDoc.exists) {
         print(userDoc.data());
         profilePicture = userData!['profilePicture'];
+        prefs.setString("displayName", userData['displayName']);
         return userDoc.data()
             as Map<String, dynamic>?; // Cast to the correct type
       } else {
@@ -82,7 +85,7 @@ class _UserProfileViewState extends State<UserProfileView> {
 
       if (user != null) {
         String displayName = user.displayName ?? "";
-        String email = user.email ?? "";
+        String email = user.email;
         String userId = user.id;
 
         FirebaseFirestore firestore = FirebaseFirestore.instance;
@@ -97,18 +100,20 @@ class _UserProfileViewState extends State<UserProfileView> {
             storageReference.putFile(File(pickedFile!.path));
         TaskSnapshot snapshot = await uploadTask;
         String downloadUrl = await snapshot.ref.getDownloadURL();
-        _pass == null
+        SharedPreferences prefs = await Constants.getPrefs();
+        var dName = prefs.getString("displayName");
+        _pass == ""
             ? await userDocRef.set({
-                'displayName': _name ?? displayName,
+                'displayName': _name == '' ? dName : _name,
                 'email': _email = email,
                 'userId': userId,
                 'profilePicture': downloadUrl,
               })
             : await userDocRef.set({
-                'displayName': _name ?? displayName,
+                'displayName': _name == '' ? dName : _name,
                 'email': _email = email,
                 'userId': userId,
-                'password': _pass ?? "",
+                'password': _pass,
                 'profilePicture': downloadUrl,
               });
         Navigator.pop(context);
@@ -134,18 +139,20 @@ class _UserProfileViewState extends State<UserProfileView> {
             storageReference.putFile(File(pickedFile!.path));
         TaskSnapshot snapshot = await uploadTask;
         String downloadUrl = await snapshot.ref.getDownloadURL();
-        _pass == null
+        SharedPreferences prefs = await Constants.getPrefs();
+        var dName = prefs.getString("displayName");
+        _pass == false
             ? await userDocRef.set({
-                'displayName': _name ?? displayName,
+                'displayName': _name == '' ? dName : _name,
                 'email': _email = email,
                 'userId': userId,
                 'profilePicture': downloadUrl,
               })
             : await userDocRef.set({
-                'displayName': _name ?? displayName,
+                'displayName': _name == '' ? dName : _name,
                 'email': _email = email,
                 'userId': userId,
-                'password': _pass ?? "",
+                'password': _pass,
                 'profilePicture': downloadUrl,
               });
         Navigator.pop(context);

@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:app/home_screens/bottom_navigation.dart';
 import 'package:app/profile/create_account.dart';
 import 'package:app/profile/user_type.dart';
@@ -62,7 +64,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
 
       if (userData!['email'] == emailController.text &&
-          userData!['password'] == passController.text) {
+          userData['password'] == passController.text) {
         Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) {
           return const CheckProfile();
