@@ -4,12 +4,16 @@ import 'package:app/profile/widgets/form_progress_indicator.dart';
 import 'package:app/widgets/custom_buttons.dart';
 import 'package:app/widgets/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 
 class VerifyFormStep1View extends StatelessWidget {
   const VerifyFormStep1View({super.key});
 
   @override
   Widget build(BuildContext context) {
+    var route = ModalRoute.of(context);
+    var currentRouteName = route?.settings.name;
+    developer.log('Current Route: $currentRouteName');
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(

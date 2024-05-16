@@ -42,7 +42,8 @@ class VerifyProfileView extends StatelessWidget {
               ),
               Text(
                 'Basic information to create your account',
-                style: poppinsRegular.copyWith(fontSize: 12, color: AppColors.greyProfile),
+                style: poppinsRegular.copyWith(
+                    fontSize: 12, color: AppColors.greyProfile),
               ),
               const SizedBox(height: 10),
               Text(
@@ -51,7 +52,8 @@ class VerifyProfileView extends StatelessWidget {
               ),
               Text(
                 'Determining your investing goals',
-                style: poppinsRegular.copyWith(fontSize: 12, color: AppColors.greyProfile),
+                style: poppinsRegular.copyWith(
+                    fontSize: 12, color: AppColors.greyProfile),
               ),
               const SizedBox(height: 10),
               Text(
@@ -60,7 +62,8 @@ class VerifyProfileView extends StatelessWidget {
               ),
               Text(
                 'Required by U.S financial regulatory laws',
-                style: poppinsRegular.copyWith(fontSize: 12, color: AppColors.greyProfile),
+                style: poppinsRegular.copyWith(
+                    fontSize: 12, color: AppColors.greyProfile),
               ),
               const Spacer(),
               PrimaryButton(
@@ -69,7 +72,7 @@ class VerifyProfileView extends StatelessWidget {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) {
-                        return const VerifyPhoneFieldView();
+                        return VerifyPhoneFieldView();
                       },
                     ),
                   );

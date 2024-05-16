@@ -3,9 +3,102 @@ import 'package:app/profile/views/verify_form_step1_view.dart';
 import 'package:app/widgets/custom_buttons.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_otp_text_field/flutter_otp_text_field.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'dart:async';
 
-class VerifyOtpView extends StatelessWidget {
-  const VerifyOtpView({super.key});
+class VerifyOtpView extends StatefulWidget {
+  final String verificationId;
+
+  const VerifyOtpView({super.key, required this.verificationId});
+
+  @override
+  _VerifyOtpViewState createState() => _VerifyOtpViewState();
+}
+
+class _VerifyOtpViewState extends State<VerifyOtpView> {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+  String otpCode = '';
+  late Timer _timer;
+  int _start = 60; // Countdown time in seconds
+
+  @override
+  void initState() {
+    super.initState();
+    startTimer();
+  }
+
+  @override
+  void dispose() {
+    _timer.cancel();
+    super.dispose();
+  }
+
+  void startTimer() {
+    _timer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+      if (_start == 0) {
+        setState(() {
+          timer.cancel();
+        });
+      } else {
+        setState(() {
+          _start--;
+        });
+      }
+    });
+  }
+
+  void _verifyOTP(BuildContext context) async {
+    PhoneAuthCredential credential = PhoneAuthProvider.credential(
+      verificationId: widget.verificationId,
+      smsCode: otpCode,
+    );
+
+    try {
+      await _auth.signInWithCredential(credential);
+      showDialog(
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            content: SizedBox(
+              height: 200,
+              child: Column(
+                children: [
+                  const SizedBox(height: 20),
+                  Text(
+                    'Phone Verification',
+                    style: poppinsMedium.copyWith(fontSize: 20),
+                  ),
+                  const SizedBox(height: 20),
+                  Text(
+                    'Your Phone number has been verified',
+                    style: poppinsRegular.copyWith(fontSize: 14),
+                  ),
+                  const Spacer(),
+                  PrimaryButton(
+                    title: 'Ok',
+                    onTap: () {
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) {
+                            return const VerifyFormStep1View();
+                          },
+                        ),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                ],
+              ),
+            ),
+          );
+        },
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to verify OTP: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,35 +117,29 @@ class VerifyOtpView extends StatelessWidget {
                 child: const Icon(Icons.arrow_back_ios_new),
               ),
               const SizedBox(height: 35),
-              Text('Please enter your OTP', style: poppinsMedium.copyWith(fontSize: 17)),
+              Text(
+                'Please enter your OTP',
+                style: poppinsMedium.copyWith(fontSize: 17),
+              ),
               const SizedBox(height: 35),
               OtpTextField(
-                numberOfFields: 5,
+                numberOfFields: 6,
                 borderColor: const Color(0xFF512DA8),
-                //set to true to show as box or false to show as dash
                 showFieldAsBox: true,
                 fieldWidth: 45,
-                //runs when a code is typed in
                 onCodeChanged: (String code) {
-                  //handle validation or checks here
+                  // Handle validation or checks here if needed
                 },
-                //runs when every textfield is filled
                 onSubmit: (String verificationCode) {
-                  // showDialog(
-                  //     context: context,
-                  //     builder: (context){
-                  //       return AlertDialog(
-                  //         title: Text("Verification Code"),
-                  //         content: Text('Code entered is $verificationCode'),
-                  //       );
-                  //     }
-                  // );
-                }, // end onSubmit
+                  otpCode = verificationCode;
+                },
+                autoFocus: true,
+                keyboardType: TextInputType.number,
               ),
               const SizedBox(height: 60),
               Center(
                 child: Text(
-                  'Resend Code in 00:08',
+                  'Resend Code in 00:${_start.toString().padLeft(2, '0')}',
                   style: poppinsMedium.copyWith(fontSize: 16),
                 ),
               ),
@@ -60,52 +147,28 @@ class VerifyOtpView extends StatelessWidget {
               PrimaryButton(
                 title: 'Verify',
                 onTap: () {
-                  showDialog(
-                    context: context,
-                    builder: (context) {
-                      return AlertDialog(
-                        content: SizedBox(
-                          height: 200,
-                          child: Column(
-                            children: [
-                              const SizedBox(height: 20),
-                              Text(
-                                'Phone Verification',
-                                style: poppinsMedium.copyWith(fontSize: 20),
-                              ),
-                              const SizedBox(height: 20),
-                              Text(
-                                'Your Phone number has been Verifed',
-                                style: poppinsRegular.copyWith(fontSize: 14),
-                              ),
-                              //const SizedBox(height: 20),
-                              const Spacer(),
-                              PrimaryButton(
-                                title: 'Ok',
-                                onTap: () {
-                                  Navigator.of(context).push(
-                                    MaterialPageRoute(
-                                      builder: (_) {
-                                        return const VerifyFormStep1View();
-                                      },
-                                    ),
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 10),
-                            ],
-                          ),
-                        ),
-                      );
-                    },
-                  );
+                  _verifyOTP(context);
                 },
               ),
               const SizedBox(height: 21),
               Center(
-                child: Text(
-                  'Resend Code',
-                  style: poppinsBold.copyWith(fontSize: 18),
+                child: GestureDetector(
+                  onTap: _start == 0
+                      ? () {
+                          // Logic to resend the OTP
+                          setState(() {
+                            _start = 60;
+                            startTimer();
+                          });
+                        }
+                      : null,
+                  child: Text(
+                    'Resend Code',
+                    style: poppinsBold.copyWith(
+                      fontSize: 18,
+                      color: _start == 0 ? Colors.blue : Colors.grey,
+                    ),
+                  ),
                 ),
               ),
             ],
