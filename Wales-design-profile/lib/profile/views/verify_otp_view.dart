@@ -8,8 +8,9 @@ import 'dart:async';
 
 class VerifyOtpView extends StatefulWidget {
   final String verificationId;
+  // final String documentId; // Added documentId parameter
 
-  const VerifyOtpView({super.key, required this.verificationId});
+  VerifyOtpView({Key? key, required this.verificationId}) : super(key: key);
 
   @override
   _VerifyOtpViewState createState() => _VerifyOtpViewState();
@@ -80,7 +81,7 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) {
-                            return const VerifyFormStep1View();
+                            return VerifyFormStep1View(); // Pass documentId to the next screen
                           },
                         ),
                       );

@@ -4,9 +4,41 @@ import 'package:app/profile/widgets/form_progress_indicator.dart';
 import 'package:app/widgets/custom_buttons.dart';
 import 'package:app/widgets/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class VerifyFormStep3View extends StatelessWidget {
-  const VerifyFormStep3View({super.key});
+class VerifyFormStep3View extends StatefulWidget {
+  final String documentId;
+
+  const VerifyFormStep3View({super.key, required this.documentId});
+
+  @override
+  _VerifyFormStep3ViewState createState() => _VerifyFormStep3ViewState();
+}
+
+class _VerifyFormStep3ViewState extends State<VerifyFormStep3View> {
+  final TextEditingController _goalDescController = TextEditingController();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  void _updateFirestore() async {
+    String goalDescription = _goalDescController.text.trim();
+
+    try {
+      await _firestore.collection('onBoarding').doc(widget.documentId).update({
+        'goalDesc': goalDescription,
+      });
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) {
+            return VerifyFormStep4View(documentId: widget.documentId);
+          },
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to update Firestore: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,19 +64,15 @@ class VerifyFormStep3View extends StatelessWidget {
                 style: poppinsMedium.copyWith(fontSize: 20),
               ),
               const SizedBox(height: 20),
-              const CustomTextFormField(hintText: 'Description', maxLines: 10),
+              CustomTextFormField(
+                hintText: 'Description',
+                maxLines: 10,
+                controller: _goalDescController,
+              ),
               const Spacer(),
               PrimaryButton(
                 title: 'Next',
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) {
-                        return const VerifyFormStep4View();
-                      },
-                    ),
-                  );
-                },
+                onTap: _updateFirestore,
               ),
             ],
           ),

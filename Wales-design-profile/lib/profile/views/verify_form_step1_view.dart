@@ -4,16 +4,46 @@ import 'package:app/profile/widgets/form_progress_indicator.dart';
 import 'package:app/widgets/custom_buttons.dart';
 import 'package:app/widgets/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
-import 'dart:developer' as developer;
+import 'package:cloud_firestore/cloud_firestore.dart';
 
-class VerifyFormStep1View extends StatelessWidget {
-  const VerifyFormStep1View({super.key});
+class VerifyFormStep1View extends StatefulWidget {
+  const VerifyFormStep1View({Key? key}) : super(key: key);
+
+  @override
+  _VerifyFormStep1ViewState createState() => _VerifyFormStep1ViewState();
+}
+
+class _VerifyFormStep1ViewState extends State<VerifyFormStep1View> {
+  final TextEditingController _firstNameController = TextEditingController();
+  final TextEditingController _secondNameController = TextEditingController();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
+  void _createFirestoreDocument() async {
+    String firstName = _firstNameController.text.trim();
+    String lastName = _secondNameController.text.trim();
+
+    try {
+      DocumentReference docRef = await _firestore.collection('onBoarding').add({
+        'firstName': firstName,
+        'lastName': lastName,
+      });
+      String documentId = docRef.id; // Get the ID of the newly created document
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) {
+            return VerifyFormStep2View(documentId: documentId);
+          },
+        ),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to create Firestore document: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    var route = ModalRoute.of(context);
-    var currentRouteName = route?.settings.name;
-    developer.log('Current Route: $currentRouteName');
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -36,21 +66,19 @@ class VerifyFormStep1View extends StatelessWidget {
                 style: poppinsMedium.copyWith(fontSize: 20),
               ),
               const SizedBox(height: 20),
-              const CustomTextFormField(hintText: 'First Name'),
+              CustomTextFormField(
+                hintText: 'First Name',
+                controller: _firstNameController,
+              ),
               const SizedBox(height: 20),
-              const CustomTextFormField(hintText: 'Second Name'),
+              CustomTextFormField(
+                hintText: 'Second Name',
+                controller: _secondNameController,
+              ),
               const Spacer(),
               PrimaryButton(
                 title: 'Next',
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) {
-                        return const VerifyFormStep2View();
-                      },
-                    ),
-                  );
-                },
+                onTap: _createFirestoreDocument,
               ),
             ],
           ),
