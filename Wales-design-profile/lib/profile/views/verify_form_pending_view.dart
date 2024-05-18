@@ -1,10 +1,13 @@
+import 'package:app/admin/dashboard.dart';
 import 'package:app/constants/strings.dart';
 import 'package:app/constants/typography.dart';
 import 'package:app/widgets/custom_buttons.dart';
 import 'package:flutter/material.dart';
 
+import '../../home_screens/home.dart';
+
 class VerifyFormPendingView extends StatelessWidget {
-  const VerifyFormPendingView({super.key});
+  const VerifyFormPendingView({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +21,8 @@ class VerifyFormPendingView extends StatelessWidget {
             children: [
               GestureDetector(
                 onTap: () {
-                  Navigator.pop(context);
+                  // Navigate back to the profile screen
+                  Navigator.popUntil(context, ModalRoute.withName('/profile'));
                 },
                 child: const Icon(Icons.arrow_back_ios_new),
               ),
@@ -28,7 +32,9 @@ class VerifyFormPendingView extends StatelessWidget {
                 style: poppinsMedium.copyWith(fontSize: 20),
               ),
               const SizedBox(height: 56),
-              Center(child: Image.asset(Strings.pendingClock, height: 107, width: 107)),
+              Center(
+                  child: Image.asset(Strings.pendingClock,
+                      height: 107, width: 107)),
               const SizedBox(height: 16),
               Center(
                 child: Text(
@@ -39,7 +45,16 @@ class VerifyFormPendingView extends StatelessWidget {
               const Spacer(),
               PrimaryButton(
                 title: 'Back',
-                onTap: () {},
+                onTap: () {
+                  // Navigate back to the profile screen
+                  Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
+                    builder: (_) {
+                      return const Home();
+                    },
+                  ), (route) => false);
+
+                  //Navigator.popUntil(context, ModalRoute.withName('/profile'));
+                },
               ),
             ],
           ),

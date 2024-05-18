@@ -135,9 +135,11 @@ class _TrendingContainerListState extends State<TrendingContainerList> {
     // });
   }
 
-  void goTo() {
+  goTo(data) {
     Navigator.of(context).push(MaterialPageRoute(builder: (_) {
-      return PropertyDetails();
+      return PropertyDetails(
+        propertyData: data,
+      );
     }));
   }
 
@@ -151,7 +153,7 @@ class _TrendingContainerListState extends State<TrendingContainerList> {
         scrollDirection: Axis.horizontal,
         itemBuilder: (context, index) {
           return GestureDetector(
-            onTap: goTo,
+            onTap: goTo(trendingProperty[index]),
             child: Padding(
               padding: const EdgeInsets.only(right: 20.0),
               child: TrendingContainer(

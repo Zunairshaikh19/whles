@@ -1,8 +1,8 @@
 import 'package:app/home_screens/saved.dart';
 import 'package:app/home_screens/tabs/all.dart';
 import 'package:app/home_screens/widgets/filter_sheet.dart';
-
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import '../widgets/custom_text_field.dart';
 
 class Home extends StatefulWidget {
@@ -19,8 +19,6 @@ class _HomeState extends State<Home> {
   GlobalKey<ScaffoldState> get scaffoldKey => _scaffoldKey;
   String greetings = "";
 
-  // int currentIndex = 0;
-  // String userUid = '';
   @override
   void initState() {
     super.initState();
@@ -46,7 +44,7 @@ class _HomeState extends State<Home> {
     'All',
     'Urban',
     'Suburban',
-    "Safe neightborhood",
+    "Safe neighborhood",
     "Rate a ride",
     "Reviews",
   ];
@@ -62,16 +60,13 @@ class _HomeState extends State<Home> {
     return Scaffold(
       key: scaffoldKey,
       backgroundColor: Colors.white,
-      // drawer: const SideMenu(),
       body: NestedScrollView(
         physics: const BouncingScrollPhysics(),
         headerSliverBuilder: (context, innerBoxIsScrolled) {
           return [
             SliverAppBar(
               toolbarHeight: 40,
-              //backgroundColor: AppTheme.greyColor,
               backgroundColor: Colors.white,
-              // foregroundColor: AppTheme.backgroundColor,
               elevation: 0,
               expandedHeight: 130,
               floating: false,
@@ -80,14 +75,13 @@ class _HomeState extends State<Home> {
               leading: Padding(
                 padding: const EdgeInsets.only(left: 16.0, top: 12),
                 child: GestureDetector(
-                  onTap: () {
-                    // if (userUid == Constants.adminId) {
-                    //   _scaffoldKey.currentState!.openDrawer();
-                    // }
-                  },
+                  onTap: () {},
                   child: const Text(
                     'Explore',
-                    style: TextStyle(fontWeight: FontWeight.w500, fontSize: 20, fontFamily: 'Poppins'),
+                    style: TextStyle(
+                        fontWeight: FontWeight.w500,
+                        fontSize: 20,
+                        fontFamily: 'Poppins'),
                   ),
                 ),
               ),
@@ -114,7 +108,7 @@ class _HomeState extends State<Home> {
                     child: Column(
                       children: [
                         Padding(
-                          padding: const EdgeInsets.only(left:10,right:10),
+                          padding: const EdgeInsets.only(left: 10, right: 10),
                           child: CustomTextField(
                             controller: searchController,
                             hintText: "Search address, city, location",
@@ -132,15 +126,9 @@ class _HomeState extends State<Home> {
                                   },
                                 );
                               },
-                              // onTap: () {
-                              //   // Navigate to the desired screen when tapped
-                              //   Navigator.push(
-                              //     context,
-                              //     MaterialPageRoute(
-                              //         builder: (context) => ModalTrigger()),
-                              //   );
-                              // },
-                              child: Image(image: ExactAssetImage('assets/setting-5.png')),
+                              child: Image(
+                                  image:
+                                      ExactAssetImage('assets/setting-5.png')),
                             ),
                           ),
                         ),
@@ -149,41 +137,10 @@ class _HomeState extends State<Home> {
                   ),
                 ),
               ),
-              // bottom: PreferredSize(
-              //     preferredSize: const Size(0, 30),
-              //     child: TabBarWidget(
-              //         tabWidget: List.generate(
-              //           tabLabels.length,
-              //           (index) {
-              //             return Container(
-              //               padding: const EdgeInsets.symmetric(horizontal: 20),
-              //               decoration: BoxDecoration(
-              //                   border: Border.all(
-              //                       color: index == index
-              //                           ? AppTheme.blackColor
-              //                           : AppTheme
-              //                               .kCustomTextFiledHintTextColor)),
-              //               child: Tab(
-              //                 child: Padding(
-              //                   padding: const EdgeInsets.all(2.0),
-              //                   child: Text(
-              //                     tabLabels[index],
-              //                     style: TextStyle(
-              //                         color: AppTheme.blackColor,
-              //                         fontSize: 10,
-              //                         fontFamily: 'Poppins'),
-              //                   ),
-              //                 ),
-              //               ),
-              //             );
-              //           },
-              //         ),
-              //         labelColor: AppTheme.whiteColor,
-              //         iColor: AppTheme.greyColor)),
             ),
           ];
         },
-        body: const All(),
+        body: All(),
       ),
     );
   }

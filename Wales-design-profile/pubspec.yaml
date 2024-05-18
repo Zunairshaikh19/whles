@@ -31,6 +31,7 @@ dependencies:
   flutter_otp_text_field: ^1.1.1
   signature: ^5.4.1
   google_sign_in: ^5.0.4
+  share_plus: ^7.2.2
 
 dev_dependencies:
   flutter_test:

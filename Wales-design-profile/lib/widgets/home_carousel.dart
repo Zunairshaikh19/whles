@@ -6,7 +6,8 @@ import 'carousel_container.dart';
 
 class HomeCarousel extends StatefulWidget {
   final double? containerSize;
-  const HomeCarousel(this.containerSize, {super.key});
+  List<String> bannerList;
+  HomeCarousel(this.containerSize, this.bannerList, {super.key});
 
   @override
   State<HomeCarousel> createState() => _HomeCarouselState();
@@ -36,18 +37,18 @@ class _HomeCarouselState extends State<HomeCarousel> {
     "View Now",
   ];
 
-  List<String> bannerList = [
-    'assets/Group67.png',
-    'assets/Group67.png',
-    'assets/Group67.png',
-    'assets/Group67.png',
-    'assets/Group67.png',
-    // 'assets/join_community.png',
-    // 'assets/images/image_30.png',
-    // 'assets/images/image_28.png',
-    // 'assets/images/image_31.png',
-    // 'assets/images/image_32.png',
-  ];
+  // List<String> bannerList = [
+  //   'assets/Group67.png',
+  //   'assets/Group67.png',
+  //   'assets/Group67.png',
+  //   'assets/Group67.png',
+  //   'assets/Group67.png',
+  //   // 'assets/join_community.png',
+  //   // 'assets/images/image_30.png',
+  //   // 'assets/images/image_28.png',
+  //   // 'assets/images/image_31.png',
+  //   // 'assets/images/image_32.png',
+  // ];
   @override
   void initState() {
     super.initState();
@@ -86,7 +87,7 @@ class _HomeCarouselState extends State<HomeCarousel> {
           },
         );
       },
-      itemCount: bannerList.length,
+      itemCount: widget.bannerList.length,
       itemBuilder: (BuildContext context, int index) {
         return Column(
           children: [
@@ -98,7 +99,7 @@ class _HomeCarouselState extends State<HomeCarousel> {
               // buttonTitle: buttonTitleList[index],
               // containerColor: containerColorList[index],
               // buttonColor: buttonColorList[index],
-              banner: bannerList[index],
+              banner: widget.bannerList[index],
               // curve: true,
             ),
           ],

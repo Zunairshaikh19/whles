@@ -1,26 +1,12 @@
-import 'package:app/models/trading_model.dart';
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import '../app_theme.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:app/app_theme.dart';
+import 'package:app/models/trading_model.dart';
 
-class TradingBigCard extends StatefulWidget {
-  const TradingBigCard({super.key});
+class TradingBigCard extends StatelessWidget {
+  final TradingModel tradingList;
 
-  @override
-  State<TradingBigCard> createState() => _TradingBigCardState();
-}
-
-class _TradingBigCardState extends State<TradingBigCard> {
-  List<TradingModel> tradingList = [
-    TradingModel('id', "assets/Group67.png", '23 Entiree Broms', "\$5.55",
-        "Single-family Leased"),
-    TradingModel('id', "assets/trading.png", '23 Entiree Broms', "\$5.55",
-        "Single-family Leased"),
-    TradingModel('id', "assets/trading.png", '23 Entiree Broms', "\$5.55",
-        "Single-family Leased"),
-    TradingModel('id', "assets/trading.png", '23 Entiree Broms', "\$5.55",
-        "Single-family Leased"),
-  ];
+  const TradingBigCard({Key? key, required this.tradingList}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -39,8 +25,10 @@ class _TradingBigCardState extends State<TradingBigCard> {
               borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(10), topRight: Radius.circular(10)),
               child: Image(
-                image: AssetImage(
-                  tradingList[0].image,
+                image: NetworkImage(
+                  tradingList.carouselImages.isNotEmpty
+                      ? tradingList.carouselImages[0]
+                      : "assets/placeholder_image.png",
                 ),
                 fit: BoxFit.cover,
               ),
@@ -58,7 +46,7 @@ class _TradingBigCardState extends State<TradingBigCard> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      tradingList[0].title,
+                      tradingList.title,
                       style: const TextStyle(
                         fontWeight: FontWeight.w500,
                         fontSize: 17,
@@ -66,7 +54,7 @@ class _TradingBigCardState extends State<TradingBigCard> {
                       ),
                     ),
                     Text(
-                      tradingList[0].price,
+                      tradingList.pricePerShare,
                       style: TextStyle(
                           fontWeight: FontWeight.w500,
                           fontSize: 13,
@@ -83,7 +71,7 @@ class _TradingBigCardState extends State<TradingBigCard> {
                       children: [
                         IntrinsicWidth(
                           child: Text(
-                            tradingList[0].subtitle,
+                            tradingList.title,
                             style: const TextStyle(
                                 fontWeight: FontWeight.w400,
                                 fontSize: 11,

@@ -29,13 +29,11 @@ class _ProfileState extends State<Profile> {
   String firstName = '';
   String lastName = '';
   String email = '';
-
   String profileUrl = '';
 
   @override
   void initState() {
     super.initState();
-    // getPrefs();
     userDataFuture = getUserData();
   }
 
@@ -150,6 +148,37 @@ class _ProfileState extends State<Profile> {
     String userId = SaveduserId;
 
     return getUserDataFromFirestore(userId);
+  }
+
+  Future<bool> checkUserAlreadyApplied(String userId) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
+    QuerySnapshot snapshot = await firestore
+        .collection('onBoarding')
+        .where('userId', isEqualTo: userId)
+        .limit(1)
+        .get();
+
+    return snapshot.docs.isNotEmpty;
+  }
+
+  void showAlreadyAppliedDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Already Applied'),
+          content: Text('You have already applied.'),
+          actions: <Widget>[
+            TextButton(
+              child: Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -269,7 +298,7 @@ class _ProfileState extends State<Profile> {
                       style: poppinsMedium.copyWith(fontSize: 24),
                     );
                   } else {
-                    // Extracting displayName from user data
+                    // Extracting email from user data
                     Map<String, dynamic>? userData = snapshot.data;
                     if (userData != null && userData.containsKey('email')) {
                       String email = userData['email'];
@@ -283,7 +312,7 @@ class _ProfileState extends State<Profile> {
                       );
                     } else {
                       return Text(
-                        'No display name found',
+                        'No email found',
                         style: poppinsMedium.copyWith(fontSize: 24),
                       );
                     }
@@ -299,14 +328,20 @@ class _ProfileState extends State<Profile> {
               height: 34,
               radius: 26,
               width: 150,
-              onPress: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) {
-                      return const VerifyProfileView();
-                    },
-                  ),
-                );
+              onPress: () async {
+                bool alreadyApplied =
+                    await checkUserAlreadyApplied(SaveduserId);
+                if (alreadyApplied) {
+                  showAlreadyAppliedDialog();
+                } else {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) {
+                        return const VerifyProfileView();
+                      },
+                    ),
+                  );
+                }
               },
               text: "Complete setup",
               fontSize: 12,

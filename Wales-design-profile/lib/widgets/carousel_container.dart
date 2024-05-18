@@ -37,7 +37,7 @@ class CarouselContainer extends StatelessWidget {
           borderRadius:
               //curve ?
               BorderRadius.circular(12),
-          image: DecorationImage(image: AssetImage(banner), fit: BoxFit.cover)
+          image: DecorationImage(image: NetworkImage(banner), fit: BoxFit.cover)
           //: BorderRadius.circular(0),
           ),
       // child: Image.asset(banner)

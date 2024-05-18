@@ -1,17 +1,19 @@
 import 'dart:async';
 
 import 'package:app/home_screens/views/buy_share_view.dart';
+import 'package:app/models/most_viewed_model.dart';
 import 'package:app/widgets/custom_button.dart';
 import 'package:app/widgets/custom_rich_text.dart';
 import 'package:app/widgets/property_details_cards.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-
+import 'package:share_plus/share_plus.dart';
 import '../app_theme.dart';
 import '../widgets/home_carousel.dart';
 
 class PropertyDetails extends StatefulWidget {
-  PropertyDetails({super.key});
+  final MostViewedModel propertyData;
+  PropertyDetails({super.key, required this.propertyData});
 
   @override
   State<PropertyDetails> createState() => _PropertyDetailsState();
@@ -21,25 +23,13 @@ class _PropertyDetailsState extends State<PropertyDetails> {
   bool loading = false;
 
   double progressValue = 50;
-  late Future<DocumentSnapshot<Map<String, dynamic>>> propertyDetail;
+  // late Future<DocumentSnapshot<Map<String, dynamic>>> propertyDetail;
 
   @override
   void initState() {
     super.initState();
     loading = false;
     progressValue = 0.0;
-    propertyDetail = fetchPropertyDetail();
-  }
-
-  Future<DocumentSnapshot<Map<String, dynamic>>> fetchPropertyDetail() async {
-    // Replace 'property_details' with the actual collection name in your Firestore
-    DocumentSnapshot<Map<String, dynamic>> snapshot = await FirebaseFirestore
-        .instance
-        .collection('property_details')
-        .doc('dXpMENyKKTRjAvgaOUHg')
-        .get();
-
-    return snapshot;
   }
 
   void updateProgress() {
@@ -55,6 +45,19 @@ class _PropertyDetailsState extends State<PropertyDetails> {
         }
       });
     });
+  }
+
+  void shareProperty() {
+    final String shareText =
+        'Check out this property: ${widget.propertyData.title}\n'
+        'Location: ${widget.propertyData.location}\n'
+        'Price: \$${widget.propertyData.pricePerMonth}/mo\n'
+        'Property Type: ${widget.propertyData.propertyType}\n'
+        'Rooms: ${widget.propertyData.rooms}\n'
+        'Area: ${widget.propertyData.area}\n'
+        'For more details, visit our app.';
+
+    Share.share(shareText);
   }
 
   void goToBuyOrder() {
@@ -94,7 +97,18 @@ class _PropertyDetailsState extends State<PropertyDetails> {
           children: [
             Stack(
               children: [
-                SizedBox(height: 300, child: HomeCarousel(270)),
+                SizedBox(
+                  height: 300,
+                  child: HomeCarousel(
+                    270, // Provide the value for containerSize
+                    widget.propertyData.carouselImages.isNotEmpty
+                        ? widget.propertyData.carouselImages
+                        : [
+                            "assets/placeholder_image.png"
+                          ], // Provide the value for bannerList
+                    key: UniqueKey(), // Provide an optional key if needed
+                  ),
+                ),
                 Positioned(
                     top: 40,
                     left: 20,
@@ -113,11 +127,14 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                 Positioned(
                   top: 40,
                   right: 20,
-                  child: CircleAvatar(
-                    backgroundColor: AppTheme.whiteColor,
-                    child: Image(
-                      image: ExactAssetImage(
-                        'assets/share.png',
+                  child: GestureDetector(
+                    onTap: shareProperty,
+                    child: CircleAvatar(
+                      backgroundColor: AppTheme.whiteColor,
+                      child: Image(
+                        image: ExactAssetImage(
+                          'assets/share.png',
+                        ),
                       ),
                     ),
                   ),
@@ -147,42 +164,9 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                           'assets/christmas-stars1.png',
                         ),
                       ),
-                      FutureBuilder<DocumentSnapshot<Map<String, dynamic>>>(
-                        future: propertyDetail,
-                        builder: (context,
-                            AsyncSnapshot<
-                                    DocumentSnapshot<Map<String, dynamic>>>
-                                snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
-
-                          if (snapshot.hasError) {
-                            return Center(
-                              child: Text('Error: ${snapshot.error}'),
-                            );
-                          }
-
-                          if (snapshot.data == null || !snapshot.data!.exists) {
-                            return Center(
-                              child: Text('No data available'),
-                            );
-                          }
-
-                          // Extract data from snapshot
-                          var data = snapshot.data!.data()!;
-
-                          // Now you can set the values using the data
-                          String sharesSold = data['sharesSold'] ?? '';
-
-                          return Text(
-                            '$sharesSold% SOLD',
-                            style: TextStyle(fontFamily: 'Poppins'),
-                          );
-                        },
+                      Text(
+                        "${widget.propertyData.sharesSoldCount}% SOLD",
+                        style: TextStyle(fontFamily: 'Poppins'),
                       ),
                     ],
                   ),
@@ -193,9 +177,15 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text(
-                        'Entire Bromo\nmountain view\nCabin in Surabaya',
-                        style: TextStyle(fontSize: 20, fontFamily: 'Poppins'),
+                      Flexible(
+                        child: Text(
+                          '${widget.propertyData.title}',
+                          style: TextStyle(fontSize: 20, fontFamily: 'Poppins'),
+                          overflow: TextOverflow
+                              .ellipsis, // or TextOverflow.fade, TextOverflow.clip, etc.
+                          maxLines:
+                              1, // Adjust as needed, or remove for unlimited lines
+                        ),
                       ),
                       Image(
                         image: ExactAssetImage(
@@ -208,7 +198,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                     height: 15,
                   ),
                   Text(
-                    'GA . Leased',
+                    'GA . ${widget.propertyData.status}',
                     style: TextStyle(
                         fontSize: 9,
                         color: AppTheme.kCustomTextFiledHintTextColor),
@@ -217,10 +207,10 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                     height: 20,
                   ),
                   CustomRichText(
-                    leftText: "\$23,445.5/mo ",
+                    leftText: "\$${widget.propertyData.pricePerMonth}/mo ",
                     leftTextColor: AppTheme.greenColor,
                     leftFontSize: 10,
-                    rightText: "Single-family",
+                    rightText: "${widget.propertyData.propertyType}",
                     rightTextColor: AppTheme.kCustomnavGrayColor,
                     rightFontSize: 10,
                     onTap: () {
@@ -242,7 +232,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                         width: 5,
                       ),
                       Text(
-                        '2 room',
+                        '${widget.propertyData.rooms} room',
                         style: TextStyle(
                             fontSize: 10,
                             color: AppTheme.kCustomnavGrayColor,
@@ -256,7 +246,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                         width: 5,
                       ),
                       Text(
-                        '874 m2',
+                        '${widget.propertyData.area}',
                         style: TextStyle(
                             fontSize: 10,
                             color: AppTheme.kCustomnavGrayColor,
@@ -270,7 +260,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                         width: 5,
                       ),
                       Text(
-                        'Malang, Probolinggo',
+                        '${widget.propertyData.location}',
                         style: TextStyle(
                             fontSize: 10,
                             color: AppTheme.kCustomnavGrayColor,
@@ -290,7 +280,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                         fontFamily: 'Poppins'),
                   ),
                   Text(
-                    '\$512.66',
+                    '\$${widget.propertyData.monthlyDividend}',
                     style: TextStyle(
                         color: AppTheme.kCustomCryptoTextColor,
                         fontSize: 25,
@@ -309,7 +299,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                             color: AppTheme.kCustomCryptoTextColor),
                       ),
                       Text(
-                        '\$1,933',
+                        '\$${widget.propertyData.rent}',
                         style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 10,
@@ -330,7 +320,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                             color: AppTheme.kCustomCryptoTextColor),
                       ),
                       Text(
-                        '\$233.00',
+                        '\$${widget.propertyData.operatingExpenses}',
                         style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 10,
@@ -358,7 +348,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                             color: AppTheme.kCustomCryptoTextColor),
                       ),
                       Text(
-                        '\$1,933.50',
+                        '\$${widget.propertyData.chargeInCash}',
                         style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 10,
@@ -379,7 +369,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                             color: AppTheme.kCustomCryptoTextColor),
                       ),
                       Text(
-                        '\$512.66',
+                        '\$${widget.propertyData.operatingExpenses}',
                         style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 10,
@@ -403,7 +393,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                     height: 15,
                   ),
                   Text(
-                    '8,101',
+                    '${widget.propertyData.sharesSoldCount}',
                     style: TextStyle(
                         color: AppTheme.kCustomCryptoTextColor,
                         fontSize: 18,
@@ -454,7 +444,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                             color: AppTheme.kCustomCryptoTextColor),
                       ),
                       Text(
-                        '\$1,899',
+                        '\$${widget.propertyData.sharesLeft}',
                         style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 10,
@@ -479,7 +469,7 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                             color: AppTheme.kCustomCryptoTextColor),
                       ),
                       Text(
-                        '7 Shares',
+                        '${widget.propertyData.averagePurchase} Shares',
                         style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 10,
@@ -515,7 +505,8 @@ class _PropertyDetailsState extends State<PropertyDetails> {
                     height: 56,
                     onPress: goToBuyOrder,
                     //text: "Complete setup",
-                    text: "Buy (5\$ / per share)",
+                    text:
+                        "Buy (${widget.propertyData.pricePerShare}\$ / per share)",
                     containerColor: AppTheme.kCustomButtonColorgreen,
                     fontColor: Colors.white,
                     fontSize: 16,

@@ -137,10 +137,10 @@ class _ViewPropertyDetailsState extends State<ViewPropertyDetails> {
                       children: [
                         Stack(
                           children: [
-                            const SizedBox(
-                                height: 199,
-                                width: 128,
-                                child: HomeCarousel(199)),
+                            // const SizedBox(
+                            //     height: 199,
+                            //     width: 128,
+                            //     child: HomeCarousel(199)),
                             Positioned(
                                 bottom: 20,
                                 right: 10,

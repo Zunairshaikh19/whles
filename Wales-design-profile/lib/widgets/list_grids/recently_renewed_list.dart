@@ -1,10 +1,12 @@
 import 'package:app/home_screens/property_details.dart';
 import 'package:app/models/recently_renewed_model.dart';
+import 'package:app/models/trading_model.dart';
 import 'package:app/widgets/recently_renewed_container.dart';
 import 'package:flutter/material.dart';
 
 class RecentlyRenewedList extends StatelessWidget {
-  const RecentlyRenewedList({super.key});
+  const RecentlyRenewedList(
+      {super.key, required List<TradingModel> tradingList});
 
   @override
   Widget build(BuildContext context) {
@@ -30,10 +32,10 @@ class RecentlyRenewedList extends StatelessWidget {
           child: InkWell(
             onTap: () {
               // Navigate to the desired screen when tapped
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => PropertyDetails()),
-              );
+              // Navigator.push(
+              //   context,
+              //   MaterialPageRoute(builder: (context) => PropertyDetails()),
+              // );
             },
             child: RecentlyRenewedContainer(
               recentlyRenewedList: recentlyRenewedList[index],
