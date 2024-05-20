@@ -11,7 +11,8 @@ import 'package:flutter/material.dart';
 import '../../models/trading_model.dart';
 
 class All extends StatefulWidget {
-  const All({super.key});
+  var searchQuery = "";
+  All({super.key, required this.searchQuery});
 
   @override
   State<All> createState() => _AllState();
@@ -28,8 +29,8 @@ class _AllState extends State<All> {
   ];
   List<TradingModel> tradingList = [];
   List<MostViewedModel> mostViewList = [];
-  //add more models and fetch listtype data
-  // List<TradingModel> mostViewList = [];
+  List<TradingModel> filteredTradingList = [];
+  List<MostViewedModel> filteredMostViewList = [];
 
   @override
   void initState() {
@@ -46,6 +47,7 @@ class _AllState extends State<All> {
     setState(() {
       tradingList =
           snapshot.docs.map((doc) => TradingModel.fromFirestore(doc)).toList();
+      filterProperties(context);
     });
   }
 
@@ -58,7 +60,45 @@ class _AllState extends State<All> {
       mostViewList = snapshot.docs
           .map((doc) => MostViewedModel.fromFirestore(doc))
           .toList();
+      filterProperties(context);
     });
+  }
+
+  void filterProperties(BuildContext context) {
+    final query = widget.searchQuery.toLowerCase();
+    if (query.isNotEmpty) {
+      filteredTradingList = tradingList
+          .where((property) =>
+              property.title.toLowerCase().contains(query) ||
+              property.location.toLowerCase().contains(query))
+          .toList();
+      filteredMostViewList = mostViewList
+          .where((property) =>
+              property.title.toLowerCase().contains(query) ||
+              property.location.toLowerCase().contains(query))
+          .toList();
+
+      // Check if both filtered lists are empty
+      if (filteredTradingList.isEmpty && filteredMostViewList.isEmpty) {
+        // Delay the execution of showSnackBar() until after the current frame has finished building
+        WidgetsBinding.instance?.addPostFrameCallback((_) {
+          // Show snack bar indicating no properties found
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('No properties found.'),
+            ),
+          );
+        });
+      }
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant All oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.searchQuery != widget.searchQuery) {
+      filterProperties(context);
+    }
   }
 
   @override
@@ -66,116 +106,130 @@ class _AllState extends State<All> {
     return SingleChildScrollView(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
-        child: Column(
-          children: [
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: SizedBox(
-                height: 40,
-                child: Row(
-                  children: [
-                    ...List.generate(
-                      _homeCategory.length,
-                      (index) => Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 20, vertical: 6),
-                        margin: const EdgeInsets.only(right: 20),
-                        decoration: BoxDecoration(
-                          border:
-                              Border.all(color: Colors.grey.withOpacity(0.3)),
-                        ),
-                        child: Text(
-                          _homeCategory[index],
-                          style: poppinsRegular.copyWith(
-                            fontSize: 14,
-                            color: Colors.black.withOpacity(0.6),
+        child: filteredTradingList.isEmpty || widget.searchQuery.isEmpty
+            ? Column(
+                children: [
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: SizedBox(
+                      height: 40,
+                      child: Row(
+                        children: [
+                          ...List.generate(
+                            _homeCategory.length,
+                            (index) => Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 20, vertical: 6),
+                              margin: const EdgeInsets.only(right: 20),
+                              decoration: BoxDecoration(
+                                border: Border.all(
+                                    color: Colors.grey.withOpacity(0.3)),
+                              ),
+                              child: Text(
+                                _homeCategory[index],
+                                style: poppinsRegular.copyWith(
+                                  fontSize: 14,
+                                  color: Colors.black.withOpacity(0.6),
+                                ),
+                              ),
+                            ),
                           ),
-                        ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                  const SizedBox(height: 30),
+                  const HomeHeadingWidget(
+                    title: "Trending",
+                    type: "trend",
+                    showView: true,
+                  ),
+                  SizedBox(
+                    height: 209,
+                    child: MostViewedList(mostViewList: mostViewList),
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  const HomeHeadingWidget(
+                    title: "Recently Renewed",
+                    type: "trend",
+                    showView: true,
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                    height: 216,
+                    child: RecentlyRenewedList(tradingList: tradingList),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const HomeHeadingWidget(
+                    title: "Most Viewed",
+                    type: "trend",
+                    showView: true,
+                  ),
+                  SizedBox(
+                    height: 209,
+                    child: MostViewedList(mostViewList: mostViewList),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const HomeHeadingWidget(
+                    title: "Trading",
+                    type: "trend",
+                    showView: true,
+                  ),
+                  SizedBox(
+                    height: 218,
+                    child: TradingList(tradingList: tradingList),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const HomeHeadingWidget(
+                    title: "Pre-Trading",
+                    type: "trend",
+                    showView: true,
+                  ),
+                  SizedBox(
+                    height: 218,
+                    child: TradingList(tradingList: tradingList),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: tradingList.isNotEmpty
+                        ? TradingBigCard(tradingList: tradingList[0]!)
+                        : SizedBox(), // Or provide a placeholder widget when the list is empty
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: HostPlace(),
+                  ),
+                ],
+              )
+            : Column(
+                children: [
+                  const HomeHeadingWidget(
+                    title: "Trading",
+                    type: "trend",
+                    showView: true,
+                  ),
+                  SizedBox(
+                    height: 218,
+                    child: TradingList(tradingList: tradingList),
+                  ),
+                ],
               ),
-            ),
-            const SizedBox(height: 30),
-            const HomeHeadingWidget(
-              title: "Trending",
-              type: "trend",
-              showView: true,
-            ),
-            SizedBox(
-              height: 209,
-              child: MostViewedList(mostViewList: mostViewList),
-            ),
-            const SizedBox(
-              height: 30,
-            ),
-            const HomeHeadingWidget(
-              title: "Recently Renewed",
-              type: "trend",
-              showView: true,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            SizedBox(
-              height: 216,
-              child: RecentlyRenewedList(tradingList: tradingList),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const HomeHeadingWidget(
-              title: "Most Viewed",
-              type: "trend",
-              showView: true,
-            ),
-            SizedBox(
-              height: 209,
-              child: MostViewedList(mostViewList: mostViewList),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const HomeHeadingWidget(
-              title: "Trading",
-              type: "trend",
-              showView: true,
-            ),
-            SizedBox(
-              height: 218,
-              child: TradingList(tradingList: tradingList),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const HomeHeadingWidget(
-              title: "Pre-Trading",
-              type: "trend",
-              showView: true,
-            ),
-            SizedBox(
-              height: 218,
-              child: TradingList(tradingList: tradingList),
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            Padding(
-              padding: EdgeInsets.all(8.0),
-              child: tradingList.isNotEmpty
-                  ? TradingBigCard(tradingList: tradingList[0]!)
-                  : SizedBox(), // Or provide a placeholder widget when the list is empty
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Padding(
-              padding: EdgeInsets.all(8.0),
-              child: HostPlace(),
-            ),
-          ],
-        ),
       ),
     );
   }
