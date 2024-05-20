@@ -70,11 +70,13 @@ class _AllState extends State<All> {
       filteredTradingList = tradingList
           .where((property) =>
               property.title.toLowerCase().contains(query) ||
+              property.propertyType.toLowerCase().contains(query) ||
               property.location.toLowerCase().contains(query))
           .toList();
       filteredMostViewList = mostViewList
           .where((property) =>
               property.title.toLowerCase().contains(query) ||
+              property.propertyType.toLowerCase().contains(query) ||
               property.location.toLowerCase().contains(query))
           .toList();
 

@@ -46,7 +46,7 @@ class _HomeState extends State<Home> {
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
           ),
-          child: const FilterSheet(),
+          child: FilterSheet(),
         );
       },
     );
