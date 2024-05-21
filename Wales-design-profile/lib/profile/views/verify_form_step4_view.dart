@@ -24,6 +24,7 @@ class _VerifyFormStep4ViewState extends State<VerifyFormStep4View> {
   late ImagePicker _imagePicker;
   XFile? _frontImage;
   XFile? _backImage;
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -72,7 +73,7 @@ class _VerifyFormStep4ViewState extends State<VerifyFormStep4View> {
           .update({
         'frontIDImg': frontImageUrl,
         'backIDImg': backImageUrl,
-        'status': false, // Set the status field to false
+        'status': false,
         'userId': SaveduserId
       });
       Navigator.of(context).push(
@@ -86,6 +87,10 @@ class _VerifyFormStep4ViewState extends State<VerifyFormStep4View> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update Firestore: $e')),
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -94,58 +99,82 @@ class _VerifyFormStep4ViewState extends State<VerifyFormStep4View> {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: const Icon(Icons.arrow_back_ios_new),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Icon(Icons.arrow_back_ios_new),
+                    ),
+                    const SizedBox(height: 25),
+                    const FormProgressIndicator(step: 4),
+                    const SizedBox(height: 47),
+                    Text(
+                      'Upload ID Images',
+                      style: poppinsMedium.copyWith(fontSize: 20),
+                    ),
+                    const SizedBox(height: 27),
+                    GestureDetector(
+                      onTap: () => _pickImage(true),
+                      child: _buildImageContainer(
+                          'Upload front page', _frontImage),
+                    ),
+                    const SizedBox(height: 16),
+                    GestureDetector(
+                      onTap: () => _pickImage(false),
+                      child:
+                          _buildImageContainer('Upload back page', _backImage),
+                    ),
+                    const SizedBox(height: 16),
+                    // Replace Spacer with SizedBox to avoid issues
+                    const SizedBox(height: 30),
+                    PrimaryButton(
+                      title: 'Next',
+                      onTap: () async {
+                        if (_frontImage != null && _backImage != null) {
+                          setState(() {
+                            _isLoading = true;
+                          });
+                          final frontImageUrl =
+                              await _uploadImage(File(_frontImage!.path));
+                          final backImageUrl =
+                              await _uploadImage(File(_backImage!.path));
+                          if (frontImageUrl != null && backImageUrl != null) {
+                            _updateFirestore(frontImageUrl, backImageUrl);
+                          } else {
+                            setState(() {
+                              _isLoading = false;
+                            });
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                  content: Text('Failed to upload images')),
+                            );
+                          }
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                                content: Text(
+                                    'Please select both front and back images')),
+                          );
+                        }
+                      },
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 25),
-              const FormProgressIndicator(step: 4),
-              const SizedBox(height: 47),
-              Text(
-                'Upload ID Images',
-                style: poppinsMedium.copyWith(fontSize: 20),
+            ),
+            if (_isLoading)
+              Center(
+                child: CircularProgressIndicator(),
               ),
-              const SizedBox(height: 27),
-              GestureDetector(
-                onTap: () => _pickImage(true),
-                child: _buildImageContainer('Upload front page', _frontImage),
-              ),
-              const SizedBox(height: 16),
-              GestureDetector(
-                onTap: () => _pickImage(false),
-                child: _buildImageContainer('Upload back page', _backImage),
-              ),
-              // Your checklist here...
-              const Spacer(),
-              PrimaryButton(
-                title: 'Next',
-                onTap: () async {
-                  if (_frontImage != null && _backImage != null) {
-                    final frontImageUrl =
-                        await _uploadImage(File(_frontImage!.path));
-                    final backImageUrl =
-                        await _uploadImage(File(_backImage!.path));
-                    if (frontImageUrl != null && backImageUrl != null) {
-                      _updateFirestore(frontImageUrl, backImageUrl);
-                    }
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                          content:
-                              Text('Please select both front and back images')),
-                    );
-                  }
-                },
-              ),
-            ],
-          ),
+          ],
         ),
       ),
     );

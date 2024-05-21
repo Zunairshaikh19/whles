@@ -3,7 +3,6 @@ import 'package:app/constants.dart';
 import 'package:app/widgets/accounts_tiles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,13 +32,21 @@ class _AccountsState extends State<Accounts> {
     'Required by U.S financial regulatory laws'
   ];
   List<String> trailing = ['Complete Setup', '', ''];
+
+  @override
+  void initState() {
+    super.initState();
+    getPrefs();
+  }
+
   void logout() async {
     FirebaseAuth.instance.signOut().then((value) async {
-      // ignore: await_only_futures
-      SharedPreferences? prefs = await Constants.prefs;
-      prefs!.clear();
+      SharedPreferences prefs = await Constants.getPrefs();
+      prefs.clear();
       signOut();
-    }).catchError((onError) {});
+    }).catchError((onError) {
+      print('Error logging out: $onError');
+    });
   }
 
   void signOut() async {
@@ -64,19 +71,17 @@ class _AccountsState extends State<Accounts> {
 
   Future<void> deleteUser() async {
     try {
-      // 1. Delete corresponding document from Firestore
-      GoogleSignIn user = GoogleSignIn(scopes: ['email']);
+      GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email']);
       FirebaseFirestore firestore = FirebaseFirestore.instance;
-      GoogleSignInAccount? userData = user.currentUser;
-      String userId = userData!.id;
-      DocumentReference userDocRef = firestore.collection('users').doc(userId);
-      await userDocRef.delete();
-      print('User document deleted from Firestore');
-      // 2. Delete user from Firebase Authentication
+      GoogleSignInAccount? userData = await googleSignIn.signInSilently();
 
-      if (user != null) {
-        await user.disconnect();
-        print('User deleted from Firebase Authentication');
+      if (userData != null) {
+        String userId = userData.id;
+        DocumentReference userDocRef =
+            firestore.collection('users').doc(userId);
+        await userDocRef.delete();
+        await googleSignIn.disconnect();
+        print('User deleted from Firestore and Firebase Authentication');
       } else {
         print('No user signed in');
         return;
@@ -93,13 +98,14 @@ class _AccountsState extends State<Accounts> {
         elevation: 0,
         backgroundColor: AppTheme.greyColor,
         leading: GestureDetector(
-            onTap: () {
-              Navigator.of(context).pop();
-            },
-            child: Icon(
-              Icons.arrow_back_ios,
-              color: AppTheme.blackColor,
-            )),
+          onTap: () {
+            Navigator.of(context).pop();
+          },
+          child: Icon(
+            Icons.arrow_back_ios,
+            color: AppTheme.blackColor,
+          ),
+        ),
       ),
       body: Column(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -120,9 +126,10 @@ class _AccountsState extends State<Accounts> {
                 physics: const ClampingScrollPhysics(),
                 itemBuilder: (context, index) {
                   return AccountTiles(
-                      title: titles[index],
-                      subtitle: subtitles[index],
-                      trailing: trailing[index]);
+                    title: titles[index],
+                    subtitle: subtitles[index],
+                    trailing: trailing[index],
+                  );
                 },
               ),
             ],
@@ -131,11 +138,9 @@ class _AccountsState extends State<Accounts> {
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Column(
               children: [
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 CustomButton(
-                  isButtonEnable: false,
+                  isButtonEnable: true,
                   height: 56,
                   onPress: logout,
                   text: "Log Out",
@@ -144,9 +149,7 @@ class _AccountsState extends State<Accounts> {
                   fontWeight: FontWeight.w500,
                   fontFamily: 'Poppins',
                 ),
-                const SizedBox(
-                  height: 10,
-                ),
+                const SizedBox(height: 10),
                 CustomButton(
                   isButtonEnable: true,
                   height: 56,
@@ -158,9 +161,7 @@ class _AccountsState extends State<Accounts> {
                   fontFamily: 'Poppins',
                   containerColor: AppTheme.whiteColor,
                 ),
-                const SizedBox(
-                  height: 15,
-                ),
+                const SizedBox(height: 15),
               ],
             ),
           )

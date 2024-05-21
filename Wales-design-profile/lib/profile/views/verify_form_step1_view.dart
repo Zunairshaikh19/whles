@@ -17,8 +17,13 @@ class _VerifyFormStep1ViewState extends State<VerifyFormStep1View> {
   final TextEditingController _firstNameController = TextEditingController();
   final TextEditingController _secondNameController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  bool _isLoading = false;
 
   void _createFirestoreDocument() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     String firstName = _firstNameController.text.trim();
     String lastName = _secondNameController.text.trim();
 
@@ -39,6 +44,10 @@ class _VerifyFormStep1ViewState extends State<VerifyFormStep1View> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to create Firestore document: $e')),
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -49,37 +58,45 @@ class _VerifyFormStep1ViewState extends State<VerifyFormStep1View> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: const Icon(Icons.arrow_back_ios_new),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(Icons.arrow_back_ios_new),
+                  ),
+                  const SizedBox(height: 25),
+                  const FormProgressIndicator(step: 1),
+                  const SizedBox(height: 47),
+                  Text(
+                    'Please enter your Legal\nName',
+                    style: poppinsMedium.copyWith(fontSize: 20),
+                  ),
+                  const SizedBox(height: 20),
+                  CustomTextFormField(
+                    hintText: 'First Name',
+                    controller: _firstNameController,
+                  ),
+                  const SizedBox(height: 20),
+                  CustomTextFormField(
+                    hintText: 'Second Name',
+                    controller: _secondNameController,
+                  ),
+                  const Spacer(),
+                  PrimaryButton(
+                    title: 'Next',
+                    onTap: _createFirestoreDocument,
+                  ),
+                ],
               ),
-              const SizedBox(height: 25),
-              const FormProgressIndicator(step: 1),
-              const SizedBox(height: 47),
-              Text(
-                'Please enter your Legal\nName',
-                style: poppinsMedium.copyWith(fontSize: 20),
-              ),
-              const SizedBox(height: 20),
-              CustomTextFormField(
-                hintText: 'First Name',
-                controller: _firstNameController,
-              ),
-              const SizedBox(height: 20),
-              CustomTextFormField(
-                hintText: 'Second Name',
-                controller: _secondNameController,
-              ),
-              const Spacer(),
-              PrimaryButton(
-                title: 'Next',
-                onTap: _createFirestoreDocument,
-              ),
+              if (_isLoading)
+                Center(
+                  child: CircularProgressIndicator(),
+                ),
             ],
           ),
         ),

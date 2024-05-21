@@ -8,7 +8,6 @@ import 'dart:async';
 
 class VerifyOtpView extends StatefulWidget {
   final String verificationId;
-  // final String documentId; // Added documentId parameter
 
   VerifyOtpView({Key? key, required this.verificationId}) : super(key: key);
 
@@ -21,6 +20,7 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
   String otpCode = '';
   late Timer _timer;
   int _start = 60; // Countdown time in seconds
+  bool _isLoading = false;
 
   @override
   void initState() {
@@ -49,6 +49,10 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
   }
 
   void _verifyOTP(BuildContext context) async {
+    setState(() {
+      _isLoading = true;
+    });
+
     PhoneAuthCredential credential = PhoneAuthProvider.credential(
       verificationId: widget.verificationId,
       smsCode: otpCode,
@@ -81,7 +85,7 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
                       Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) {
-                            return VerifyFormStep1View(); // Pass documentId to the next screen
+                            return VerifyFormStep1View();
                           },
                         ),
                       );
@@ -98,6 +102,10 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to verify OTP: $e')),
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -108,70 +116,78 @@ class _VerifyOtpViewState extends State<VerifyOtpView> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: const Icon(Icons.arrow_back_ios_new),
-              ),
-              const SizedBox(height: 35),
-              Text(
-                'Please enter your OTP',
-                style: poppinsMedium.copyWith(fontSize: 17),
-              ),
-              const SizedBox(height: 35),
-              OtpTextField(
-                numberOfFields: 6,
-                borderColor: const Color(0xFF512DA8),
-                showFieldAsBox: true,
-                fieldWidth: 45,
-                onCodeChanged: (String code) {
-                  // Handle validation or checks here if needed
-                },
-                onSubmit: (String verificationCode) {
-                  otpCode = verificationCode;
-                },
-                autoFocus: true,
-                keyboardType: TextInputType.number,
-              ),
-              const SizedBox(height: 60),
-              Center(
-                child: Text(
-                  'Resend Code in 00:${_start.toString().padLeft(2, '0')}',
-                  style: poppinsMedium.copyWith(fontSize: 16),
-                ),
-              ),
-              const SizedBox(height: 20),
-              PrimaryButton(
-                title: 'Verify',
-                onTap: () {
-                  _verifyOTP(context);
-                },
-              ),
-              const SizedBox(height: 21),
-              Center(
-                child: GestureDetector(
-                  onTap: _start == 0
-                      ? () {
-                          // Logic to resend the OTP
-                          setState(() {
-                            _start = 60;
-                            startTimer();
-                          });
-                        }
-                      : null,
-                  child: Text(
-                    'Resend Code',
-                    style: poppinsBold.copyWith(
-                      fontSize: 18,
-                      color: _start == 0 ? Colors.blue : Colors.grey,
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(Icons.arrow_back_ios_new),
+                  ),
+                  const SizedBox(height: 35),
+                  Text(
+                    'Please enter your OTP',
+                    style: poppinsMedium.copyWith(fontSize: 17),
+                  ),
+                  const SizedBox(height: 35),
+                  OtpTextField(
+                    numberOfFields: 6,
+                    borderColor: const Color(0xFF512DA8),
+                    showFieldAsBox: true,
+                    fieldWidth: 45,
+                    onCodeChanged: (String code) {
+                      // Handle validation or checks here if needed
+                    },
+                    onSubmit: (String verificationCode) {
+                      otpCode = verificationCode;
+                    },
+                    autoFocus: true,
+                    keyboardType: TextInputType.number,
+                  ),
+                  const SizedBox(height: 60),
+                  Center(
+                    child: Text(
+                      'Resend Code in 00:${_start.toString().padLeft(2, '0')}',
+                      style: poppinsMedium.copyWith(fontSize: 16),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 20),
+                  PrimaryButton(
+                    title: 'Verify',
+                    onTap: () {
+                      _verifyOTP(context);
+                    },
+                  ),
+                  const SizedBox(height: 21),
+                  Center(
+                    child: GestureDetector(
+                      onTap: _start == 0
+                          ? () {
+                              // Logic to resend the OTP
+                              setState(() {
+                                _start = 60;
+                                startTimer();
+                              });
+                            }
+                          : null,
+                      child: Text(
+                        'Resend Code',
+                        style: poppinsBold.copyWith(
+                          fontSize: 18,
+                          color: _start == 0 ? Colors.blue : Colors.grey,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
+              if (_isLoading)
+                Center(
+                  child: CircularProgressIndicator(),
+                ),
             ],
           ),
         ),

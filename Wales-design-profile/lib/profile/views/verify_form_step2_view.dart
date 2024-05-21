@@ -21,8 +21,13 @@ class _VerifyFormStep2ViewState extends State<VerifyFormStep2View> {
   final TextEditingController _cityController = TextEditingController();
   final TextEditingController _postalCodeController = TextEditingController();
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  bool _isLoading = false;
 
   void _updateFirestore() async {
+    setState(() {
+      _isLoading = true;
+    });
+
     String streetAddress = _streetAddressController.text.trim();
     String city = _cityController.text.trim();
     String postalCode = _postalCodeController.text.trim();
@@ -44,6 +49,10 @@ class _VerifyFormStep2ViewState extends State<VerifyFormStep2View> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to update Firestore: $e')),
       );
+    } finally {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 
@@ -54,42 +63,52 @@ class _VerifyFormStep2ViewState extends State<VerifyFormStep2View> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: const Icon(Icons.arrow_back_ios_new),
+              SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      child: const Icon(Icons.arrow_back_ios_new),
+                    ),
+                    const SizedBox(height: 25),
+                    const FormProgressIndicator(step: 2),
+                    const SizedBox(height: 47),
+                    Text(
+                      'Please enter your\nResidential Address',
+                      style: poppinsMedium.copyWith(fontSize: 20),
+                    ),
+                    const SizedBox(height: 20),
+                    CustomTextFormField(
+                      hintText: 'Street Address',
+                      controller: _streetAddressController,
+                    ),
+                    const SizedBox(height: 20),
+                    CustomTextFormField(
+                      hintText: 'City',
+                      controller: _cityController,
+                    ),
+                    const SizedBox(height: 20),
+                    CustomTextFormField(
+                      hintText: 'Postal/Zip',
+                      controller: _postalCodeController,
+                    ),
+                    const SizedBox(height: 20),
+                    PrimaryButton(
+                      title: 'Next',
+                      onTap: _updateFirestore,
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(height: 25),
-              const FormProgressIndicator(step: 2),
-              const SizedBox(height: 47),
-              Text(
-                'Please enter your\nResidential Address',
-                style: poppinsMedium.copyWith(fontSize: 20),
-              ),
-              const SizedBox(height: 20),
-              CustomTextFormField(
-                hintText: 'Street Address',
-                controller: _streetAddressController,
-              ),
-              const SizedBox(height: 20),
-              CustomTextFormField(
-                hintText: 'City',
-                controller: _cityController,
-              ),
-              const SizedBox(height: 20),
-              CustomTextFormField(
-                hintText: 'Postal/Zip',
-                controller: _postalCodeController,
-              ),
-              const Spacer(),
-              PrimaryButton(
-                title: 'Next',
-                onTap: _updateFirestore,
-              ),
+              if (_isLoading)
+                Center(
+                  child: CircularProgressIndicator(),
+                ),
             ],
           ),
         ),

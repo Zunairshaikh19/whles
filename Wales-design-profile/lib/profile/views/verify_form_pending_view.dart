@@ -1,4 +1,5 @@
 import 'package:app/admin/dashboard.dart';
+import 'package:app/check_profile.dart';
 import 'package:app/constants/strings.dart';
 import 'package:app/constants/typography.dart';
 import 'package:app/widgets/custom_buttons.dart';
@@ -49,7 +50,7 @@ class VerifyFormPendingView extends StatelessWidget {
                   // Navigate back to the profile screen
                   Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(
                     builder: (_) {
-                      return const Home();
+                      return const CheckProfile();
                     },
                   ), (route) => false);
 

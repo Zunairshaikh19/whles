@@ -5,13 +5,24 @@ import 'package:app/widgets/custom_text_form_field.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
-class VerifyPhoneFieldView extends StatelessWidget {
+class VerifyPhoneFieldView extends StatefulWidget {
   VerifyPhoneFieldView({super.key});
+
+  @override
+  _VerifyPhoneFieldViewState createState() => _VerifyPhoneFieldViewState();
+}
+
+class _VerifyPhoneFieldViewState extends State<VerifyPhoneFieldView> {
   final TextEditingController phoneNumber = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  bool _isLoading = false;
 
   void _sendOTP(BuildContext context) async {
+    setState(() {
+      _isLoading = true;
+    });
     String phone = phoneNumber.text.trim();
+
     await _auth.verifyPhoneNumber(
       phoneNumber: phone,
       verificationCompleted: (PhoneAuthCredential credential) async {
@@ -20,6 +31,10 @@ class VerifyPhoneFieldView extends StatelessWidget {
         print('User signed in automatically');
       },
       verificationFailed: (FirebaseAuthException e) {
+        setState(() {
+          _isLoading = false;
+        });
+
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Verification failed: ${e.message}')),
         );
@@ -32,6 +47,10 @@ class VerifyPhoneFieldView extends StatelessWidget {
             },
           ),
         );
+
+        setState(() {
+          _isLoading = false;
+        });
       },
       codeAutoRetrievalTimeout: (String verificationId) {},
     );
@@ -44,30 +63,38 @@ class VerifyPhoneFieldView extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Stack(
             children: [
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: const Icon(Icons.arrow_back_ios_new),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(Icons.arrow_back_ios_new),
+                  ),
+                  const SizedBox(height: 35),
+                  Text('Please enter your phone',
+                      style: poppinsMedium.copyWith(fontSize: 17)),
+                  const SizedBox(height: 35),
+                  CustomTextFormField(
+                    hintText: 'Phone number',
+                    controller: phoneNumber,
+                  ),
+                  const Spacer(),
+                  PrimaryButton(
+                    title: 'Next',
+                    onTap: () {
+                      _sendOTP(context);
+                    },
+                  ),
+                ],
               ),
-              const SizedBox(height: 35),
-              Text('Please enter your phone',
-                  style: poppinsMedium.copyWith(fontSize: 17)),
-              const SizedBox(height: 35),
-              CustomTextFormField(
-                hintText: 'Phone number',
-                controller: phoneNumber,
-              ),
-              const Spacer(),
-              PrimaryButton(
-                title: 'Next',
-                onTap: () {
-                  _sendOTP(context);
-                },
-              ),
+              if (_isLoading)
+                Center(
+                  child: CircularProgressIndicator(),
+                ),
             ],
           ),
         ),
