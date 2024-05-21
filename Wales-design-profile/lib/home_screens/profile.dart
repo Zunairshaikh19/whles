@@ -100,7 +100,7 @@ class _ProfileState extends State<Profile> {
     );
   }
 
-  void goToAccounts(int index) {
+  void goToAccounts(BuildContext context, int index) {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (_) {
@@ -213,25 +213,29 @@ class _ProfileState extends State<Profile> {
                       if (userData != null &&
                           userData.containsKey('profilePicture')) {
                         String profilePictureUrl = userData['profilePicture'];
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(100),
-                          child: Image.network(
-                            profilePictureUrl,
-                            fit: BoxFit.fill,
-                            width: 100,
-                            height: 100,
-                          ),
-                        );
+                        return profilePictureUrl.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(100),
+                                child: Image.network(
+                                  profilePictureUrl,
+                                  fit: BoxFit.fill,
+                                  width: 100,
+                                  height: 100,
+                                ),
+                              )
+                            : Text("No Image");
                       } else {
                         // Show default image if profile picture URL is not available
                         return ClipRRect(
                           borderRadius: BorderRadius.circular(100),
-                          child: Image.asset(
-                            profileUrl,
-                            fit: BoxFit.fill,
-                            width: 100,
-                            height: 100,
-                          ),
+                          child: profileUrl != null || profileUrl.isNotEmpty
+                              ? Image.asset(
+                                  profileUrl,
+                                  fit: BoxFit.fill,
+                                  width: 100,
+                                  height: 100,
+                                )
+                              : Text("No Image"),
                         );
                       }
                     }
@@ -363,7 +367,7 @@ class _ProfileState extends State<Profile> {
               physics: const ClampingScrollPhysics(),
               itemBuilder: (context, index) {
                 return GestureDetector(
-                  onTap: () => goToAccounts(index),
+                  onTap: () => goToAccounts(context, index),
                   child: ProfileCards(
                     image: images[index],
                     title: profileTitles[index],

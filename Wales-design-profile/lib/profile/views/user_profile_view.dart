@@ -308,7 +308,7 @@ class _UserProfileViewState extends State<UserProfileView> {
                   'email': _email = email,
                   'userId': userId,
                   'password': _pass ?? "",
-                  'profilePicture': profilePicture,
+                  'profilePicture': profilePicture ?? "",
                 });
           Navigator.pop(context);
         }
@@ -364,23 +364,29 @@ class _UserProfileViewState extends State<UserProfileView> {
                                 userData['profilePicture'];
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(100),
-                              child: Image.network(
-                                profilePictureUrl,
-                                fit: BoxFit.fill,
-                                width: 100,
-                                height: 100,
-                              ),
+                              child: profilePictureUrl.isNotEmpty ||
+                                      profilePictureUrl != null
+                                  ? Image.network(
+                                      profilePictureUrl,
+                                      fit: BoxFit.fill,
+                                      width: 100,
+                                      height: 100,
+                                    )
+                                  : Text("No Image"),
                             );
                           } else {
                             // Show default image if profile picture URL is not available
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(100),
-                              child: Image.asset(
-                                Strings.userImage,
-                                fit: BoxFit.fill,
-                                width: 100,
-                                height: 100,
-                              ),
+                              child: Strings.userImage.isNotEmpty ||
+                                      Strings.userImage != null
+                                  ? Image.asset(
+                                      Strings.userImage,
+                                      fit: BoxFit.fill,
+                                      width: 100,
+                                      height: 100,
+                                    )
+                                  : Text("No Image"),
                             );
                           }
                         }
