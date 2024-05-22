@@ -58,13 +58,31 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     String? userId = prefs.getString('userId');
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    DocumentReference userDocRef = firestore.collection('users').doc(userId);
-    DocumentSnapshot userDoc = await userDocRef.get();
-    if (userDoc.exists) {
+
+    DocumentSnapshot? userDoc;
+    if (userId != null) {
+      // Retrieve user document by userId
+      DocumentReference userDocRef = firestore.collection('users').doc(userId);
+      userDoc = await userDocRef.get();
+    } else {
+      // Retrieve user document by email if userId is null
+      QuerySnapshot querySnapshot = await firestore
+          .collection('users')
+          .where('email', isEqualTo: emailController.text)
+          .get();
+      if (querySnapshot.docs.isNotEmpty) {
+        userDoc = querySnapshot.docs.first;
+      }
+    }
+
+    if (userDoc != null && userDoc.exists) {
       Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
 
       if (userData!['email'] == emailController.text &&
           userData['password'] == passController.text) {
+        // Save userId to shared preferences
+        await prefs.setString('userId', userDoc.id);
+
         Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) {
           return const CheckProfile();
@@ -73,24 +91,53 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         Constants.showMessage(context, "Wrong Credentials");
       }
     } else {
-      Constants.showMessage(context, "user not exists");
+      Constants.showMessage(context, "User does not exist");
     }
-    // FirebaseAuth.instance
-    //     .signInWithEmailAndPassword(
-    //   email: emailController.text,
-    //   password: passController.text,
-    // )
-    //     .then((value) {
-    //   Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) {
-    //     return const CheckProfile();
-    //   }), (route) => false);
-    // }).catchError((onError) {
-    //   setState(() {
-    //     loading = false;
-    //   });
-    //   Constants.showMessage(context, onError.message);
-    // });
+    setState(() {
+      loading = false;
+    });
   }
+
+  // void login() async {
+  //   setState(() {
+  //     loading = true;
+  //   });
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String? userId = prefs.getString('userId');
+  //   FirebaseFirestore firestore = FirebaseFirestore.instance;
+  //   DocumentReference userDocRef = firestore.collection('users').doc(userId);
+  //   DocumentSnapshot userDoc = await userDocRef.get();
+  //   if (userDoc.exists) {
+  //     Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+
+  //     if (userData!['email'] == emailController.text &&
+  //         userData['password'] == passController.text) {
+  //       Navigator.of(context).pushAndRemoveUntil(
+  //           MaterialPageRoute(builder: (_) {
+  //         return const CheckProfile();
+  //       }), (route) => false);
+  //     } else {
+  //       Constants.showMessage(context, "Wrong Credentials");
+  //     }
+  //   } else {
+  //     Constants.showMessage(context, "user not exists");
+  //   }
+  //   // FirebaseAuth.instance
+  //   //     .signInWithEmailAndPassword(
+  //   //   email: emailController.text,
+  //   //   password: passController.text,
+  //   // )
+  //   //     .then((value) {
+  //   //   Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder: (_) {
+  //   //     return const CheckProfile();
+  //   //   }), (route) => false);
+  //   // }).catchError((onError) {
+  //   //   setState(() {
+  //   //     loading = false;
+  //   //   });
+  //   //   Constants.showMessage(context, onError.message);
+  //   // });
+  // }
 
   GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
 

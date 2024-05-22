@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:app/constants.dart';
 import 'package:app/home_screens/accounts.dart';
 import 'package:app/on_boarding_screens/on_boarding_main_page.dart';
@@ -9,10 +11,8 @@ import 'package:app/profile/views/user_profile_view.dart';
 import 'package:app/profile/views/verify_profile_view.dart';
 import 'package:app/widgets/profile_cards.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
 import '../Global/variable.dart';
 import '../app_theme.dart';
 import '../constants/typography.dart';
@@ -70,6 +70,8 @@ class _ProfileState extends State<Profile> {
     'FAQs',
     'Feedback',
   ];
+  Timer? _debounce;
+
   List<String> profileSubtitles = [
     'View user profile',
     'Complete setup',
@@ -101,13 +103,12 @@ class _ProfileState extends State<Profile> {
   }
 
   void goToAccounts(BuildContext context, int index) {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) {
-          return profileScreens[index];
-        },
-      ),
-    );
+    if (_debounce?.isActive ?? false) _debounce!.cancel();
+    _debounce = Timer(const Duration(milliseconds: 300), () {
+      Navigator.of(context).push(
+        MaterialPageRoute(builder: (context) => profileScreens[index]),
+      );
+    });
   }
 
   void getPrefs() async {
@@ -131,11 +132,9 @@ class _ProfileState extends State<Profile> {
       DocumentSnapshot userDoc = await userDocRef.get();
 
       if (userDoc.exists) {
-        print(userDoc.data());
         return userDoc.data()
             as Map<String, dynamic>?; // Cast to the correct type
       } else {
-        print('User document does not exist');
         return null;
       }
     } catch (e) {
@@ -144,10 +143,41 @@ class _ProfileState extends State<Profile> {
     }
   }
 
-  Future<Map<String, dynamic>?> getUserData() async {
-    String userId = SaveduserId;
+  Future<Map<String, dynamic>?> getUserDataFromEmail(String email) async {
+    FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    return getUserDataFromFirestore(userId);
+    try {
+      QuerySnapshot querySnapshot = await firestore
+          .collection('users')
+          .where('email', isEqualTo: email)
+          .limit(1)
+          .get();
+
+      if (querySnapshot.docs.isNotEmpty) {
+        return querySnapshot.docs.first.data() as Map<String, dynamic>?;
+      } else {
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching user data by email: $e');
+      return null;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getUserData() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String? userId = prefs.getString('userId');
+    String? userEmail = prefs.getString('email');
+
+    if (userId != null && userId.isNotEmpty) {
+      // Retrieve user data by userId
+      return getUserDataFromFirestore(userId);
+    } else if (userEmail != null && userEmail.isNotEmpty) {
+      // Retrieve user data by email
+      return getUserDataFromEmail(userEmail);
+    } else {
+      return null;
+    }
   }
 
   Future<bool> checkUserAlreadyApplied(String userId) async {

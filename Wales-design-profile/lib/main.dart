@@ -6,6 +6,7 @@ import 'package:firebase_core/firebase_core.dart';
 // import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'app_theme.dart';
 
 void main() async {
@@ -39,7 +40,7 @@ class _MyAppState extends State<MyApp> {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'The Offering MarketPlace',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.getCurrentTheme(isDark),
