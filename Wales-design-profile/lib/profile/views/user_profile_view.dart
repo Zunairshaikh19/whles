@@ -45,20 +45,37 @@ class _UserProfileViewState extends State<UserProfileView> {
     super.dispose();
   }
 
-  Future<Map<String, dynamic>?> getUserDataFromFirestore(String userId) async {
+  Future<Map<String, dynamic>?> getUserDataFromFirestore(
+      String userId, String userEmail) async {
     FirebaseFirestore firestore = FirebaseFirestore.instance;
 
     try {
-      DocumentReference userDocRef = firestore.collection('users').doc(userId);
+      DocumentReference userDocRef;
+      if (userId.isNotEmpty) {
+        userDocRef = firestore.collection('users').doc(userId);
+      } else {
+        QuerySnapshot result = await firestore
+            .collection('users')
+            .where('email', isEqualTo: userEmail)
+            .limit(1)
+            .get();
+        if (result.docs.isNotEmpty) {
+          userDocRef = result.docs.first.reference;
+        } else {
+          print('User document not found for email: $userEmail');
+          return null;
+        }
+      }
+
       DocumentSnapshot userDoc = await userDocRef.get();
-      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
-      SharedPreferences prefs = await Constants.getPrefs();
       if (userDoc.exists) {
-        print(userDoc.data());
+        Map<String, dynamic>? userData =
+            userDoc.data() as Map<String, dynamic>?;
+        SharedPreferences prefs = await Constants.getPrefs();
+        print(userData);
         profilePicture = userData!['profilePicture'];
         prefs.setString("displayName", userData['displayName']);
-        return userDoc.data()
-            as Map<String, dynamic>?; // Cast to the correct type
+        return userData;
       } else {
         print('User document does not exist');
         return null;
@@ -69,93 +86,81 @@ class _UserProfileViewState extends State<UserProfileView> {
     }
   }
 
+  // Future<Map<String, dynamic>?> getUserData() async {
+  //   SharedPreferences prefs = await SharedPreferences.getInstance();
+  //   String userId = prefs.getString('userId') ??
+  //       ''; // Retrieve userID from SharedPreferences
+  //   String userEmail = prefs.getString('email') ??
+  //       ''; // Retrieve userEmail from SharedPreferences
+  //   return getUserDataFromFirestore(userId, userEmail);
+  // }
+
   Future<Map<String, dynamic>?> getUserData() async {
     String userId = SaveduserId; // Replace with your logic to get the user ID
-    return getUserDataFromFirestore(userId);
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    String? email = prefs.getString('email');
+
+    return getUserDataFromFirestore(userId, email!);
   }
 
   Future<void> _getImage() async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
-    if (_pickedFile != null) {
-      // Check if _pickedFile is not null
-      await _googleSignIn.signIn();
-      GoogleSignInAccount? user = _googleSignIn.currentUser;
+    if (pickedFile != null) {
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String userEmail = prefs.getString('email') ??
+          ''; // Retrieve userEmail from SharedPreferences
 
-      if (user != null) {
-        String displayName = user.displayName ?? "";
-        String email = user.email;
-        String userId = user.id;
-
+      if (userEmail.isNotEmpty) {
         FirebaseFirestore firestore = FirebaseFirestore.instance;
-        DocumentReference userDocRef =
-            firestore.collection('users').doc(userId);
+        QuerySnapshot result = await firestore
+            .collection('users')
+            .where('email', isEqualTo: userEmail)
+            .limit(1)
+            .get();
 
-        String imagePath = 'users/$userId/profilePicture.jpg';
-        Reference storageReference =
-            FirebaseStorage.instance.ref().child(imagePath);
+        if (result.docs.isNotEmpty) {
+          DocumentSnapshot userDoc = result.docs.first;
+          String userId = userDoc.id;
+          String displayName = userDoc['displayName'] ?? "";
+          String email = userDoc['email'] ?? "";
 
-        UploadTask uploadTask =
-            storageReference.putFile(File(pickedFile!.path));
-        TaskSnapshot snapshot = await uploadTask;
-        String downloadUrl = await snapshot.ref.getDownloadURL();
-        SharedPreferences prefs = await Constants.getPrefs();
-        var dName = prefs.getString("displayName");
-        _pass == ""
-            ? await userDocRef.set({
-                'displayName': _name == '' ? dName : _name,
-                'email': _email = email,
-                'userId': userId,
-                'profilePicture': downloadUrl,
-              })
-            : await userDocRef.set({
-                'displayName': _name == '' ? dName : _name,
-                'email': _email = email,
-                'userId': userId,
-                'password': _pass,
-                'profilePicture': downloadUrl,
-              });
-        Navigator.pop(context);
-      }
-    } else {
-      await _googleSignIn.signIn();
-      GoogleSignInAccount? user = _googleSignIn.currentUser;
+          // Upload image to Firebase Storage
+          String imagePath = 'users/$userId/profilePicture.jpg';
+          Reference storageReference =
+              FirebaseStorage.instance.ref().child(imagePath);
+          UploadTask uploadTask =
+              storageReference.putFile(File(pickedFile.path));
+          TaskSnapshot snapshot = await uploadTask;
+          String downloadUrl = await snapshot.ref.getDownloadURL();
 
-      if (user != null) {
-        String displayName = user.displayName ?? "";
-        String email = user.email ?? "";
-        String userId = user.id;
+          // Check if password is set or not
+          dynamic passwordField = userDoc['password'];
+          bool passwordSet = passwordField != null;
 
-        FirebaseFirestore firestore = FirebaseFirestore.instance;
-        DocumentReference userDocRef =
-            firestore.collection('users').doc(userId);
+          DocumentReference userDocRef =
+              firestore.collection('users').doc(userId);
+          Map<String, dynamic> userData = {
+            'displayName': displayName,
+            'email': email,
+            'userId': userId,
+            'profilePicture': downloadUrl,
+          };
 
-        String imagePath = 'users/$userId/profilePicture.jpg';
-        Reference storageReference =
-            FirebaseStorage.instance.ref().child(imagePath);
+          if (passwordSet) {
+            userData['password'] = passwordField;
+          }
 
-        UploadTask uploadTask =
-            storageReference.putFile(File(pickedFile!.path));
-        TaskSnapshot snapshot = await uploadTask;
-        String downloadUrl = await snapshot.ref.getDownloadURL();
-        SharedPreferences prefs = await Constants.getPrefs();
-        var dName = prefs.getString("displayName");
-        _pass == false
-            ? await userDocRef.set({
-                'displayName': _name == '' ? dName : _name,
-                'email': _email = email,
-                'userId': userId,
-                'profilePicture': downloadUrl,
-              })
-            : await userDocRef.set({
-                'displayName': _name == '' ? dName : _name,
-                'email': _email = email,
-                'userId': userId,
-                'password': _pass,
-                'profilePicture': downloadUrl,
-              });
-        Navigator.pop(context);
+          await userDocRef.set(userData);
+
+          Navigator.pop(context);
+        } else {
+          print('User not found for email: $userEmail');
+        }
+      } else {
+        print('User email not found in SharedPreferences');
       }
     }
   }
@@ -365,7 +370,8 @@ class _UserProfileViewState extends State<UserProfileView> {
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(100),
                               child: profilePictureUrl.isNotEmpty ||
-                                      profilePictureUrl != null
+                                      profilePictureUrl != null &&
+                                          profilePictureUrl != ''
                                   ? Image.network(
                                       profilePictureUrl,
                                       fit: BoxFit.fill,
