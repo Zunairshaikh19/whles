@@ -6,6 +6,7 @@ import 'package:app/constants/strings.dart';
 import 'package:app/constants/typography.dart';
 import 'package:app/widgets/custom_buttons.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
@@ -104,16 +105,16 @@ class _UserProfileViewState extends State<UserProfileView> {
     return getUserDataFromFirestore(userId, email!);
   }
 
-  Future<void> _getImage() async {
+  Future<void> _getImage(BuildContext context) async {
     final picker = ImagePicker();
     final pickedFile = await picker.pickImage(source: ImageSource.gallery);
 
     if (pickedFile != null) {
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      String userEmail = prefs.getString('email') ??
-          ''; // Retrieve userEmail from SharedPreferences
+      String userEmail = prefs.getString('email') ?? '';
 
       if (userEmail.isNotEmpty) {
+        User? user = FirebaseAuth.instance.currentUser;
         FirebaseFirestore firestore = FirebaseFirestore.instance;
         QuerySnapshot result = await firestore
             .collection('users')
@@ -127,35 +128,47 @@ class _UserProfileViewState extends State<UserProfileView> {
           String displayName = userDoc['displayName'] ?? "";
           String email = userDoc['email'] ?? "";
 
-          // Upload image to Firebase Storage
-          String imagePath = 'users/$userId/profilePicture.jpg';
-          Reference storageReference =
-              FirebaseStorage.instance.ref().child(imagePath);
-          UploadTask uploadTask =
-              storageReference.putFile(File(pickedFile.path));
-          TaskSnapshot snapshot = await uploadTask;
-          String downloadUrl = await snapshot.ref.getDownloadURL();
-
-          // Check if password is set or not
-          dynamic passwordField = userDoc['password'];
-          bool passwordSet = passwordField != null;
-
-          DocumentReference userDocRef =
-              firestore.collection('users').doc(userId);
-          Map<String, dynamic> userData = {
-            'displayName': displayName,
-            'email': email,
-            'userId': userId,
-            'profilePicture': downloadUrl,
-          };
-
-          if (passwordSet) {
-            userData['password'] = passwordField;
+          // Determine the image path based on authentication status
+          String imagePath;
+          if (user != null) {
+            imagePath = 'users/$userId/profilePicture.jpg';
+          } else {
+            imagePath =
+                'public/profilePicture_${DateTime.now().millisecondsSinceEpoch}.jpg';
           }
 
-          await userDocRef.set(userData);
+          Reference storageReference =
+              FirebaseStorage.instance.ref().child(imagePath);
 
-          Navigator.pop(context);
+          try {
+            UploadTask uploadTask =
+                storageReference.putFile(File(pickedFile.path));
+            TaskSnapshot snapshot = await uploadTask;
+            String downloadUrl = await snapshot.ref.getDownloadURL();
+
+            // Check if password is set or not
+            dynamic passwordField = userDoc['password'];
+            bool passwordSet = passwordField != null;
+
+            DocumentReference userDocRef =
+                firestore.collection('users').doc(userId);
+            Map<String, dynamic> userData = {
+              'displayName': displayName,
+              'email': email,
+              'userId': userId,
+              'profilePicture': downloadUrl,
+            };
+
+            if (passwordSet) {
+              userData['password'] = passwordField;
+            }
+
+            await userDocRef.set(userData);
+
+            Navigator.pop(context);
+          } catch (e) {
+            print('Failed to upload image: $e');
+          }
         } else {
           print('User not found for email: $userEmail');
         }
@@ -348,7 +361,7 @@ class _UserProfileViewState extends State<UserProfileView> {
                 ),
                 const SizedBox(height: 35),
                 InkWell(
-                  onTap: _getImage,
+                  onTap: () => _getImage(context),
                   child: FutureBuilder<Map<String, dynamic>?>(
                     future: userDataFuture,
                     builder: (context, snapshot) {
@@ -705,6 +718,123 @@ class _UserProfileViewState extends State<UserProfileView> {
                           color: AppColors.black2.withOpacity(0.6),
                         ),
                       ),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'phone Number: ',
+                        style: poppinsBold.copyWith(fontSize: 18),
+                      ),
+                      Text(
+                        '03165544333',
+                        style: poppinsLight.copyWith(fontSize: 18),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Investment: ',
+                        style: poppinsBold.copyWith(fontSize: 18),
+                      ),
+                      Text(
+                        '\$0',
+                        style: poppinsLight.copyWith(fontSize: 18),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'ownerships: ',
+                        style: poppinsBold.copyWith(fontSize: 18),
+                      ),
+                      Text(
+                        'none',
+                        style: poppinsLight.copyWith(fontSize: 18),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Withdrawls: ',
+                        style: poppinsBold.copyWith(fontSize: 18),
+                      ),
+                      Text(
+                        '\$0',
+                        style: poppinsLight.copyWith(fontSize: 18),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'legal Id: ',
+                        style: poppinsBold.copyWith(fontSize: 18),
+                      ),
+                      Text(
+                        '001304',
+                        style: poppinsLight.copyWith(fontSize: 18),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Signature: ',
+                        style: poppinsBold.copyWith(fontSize: 18),
+                      ),
+                      SizedBox(
+                        width: 200,
+                        height: 140,
+                        child: Image(
+                            image: NetworkImage(
+                                "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSEYvGjqko7TINm_xnRCqrzSoXD-XN2vgvnV6oNgyOIbvBwQ6kEAwodYOpMkhkbI4-2FQA&usqp=CAU")),
+                      ),
+                    ],
+                  ),
+                ),
+                const Divider(),
+                Padding(
+                  padding: const EdgeInsets.only(left: 5.0),
+                  child: Row(
+                    children: [
+                      Text(
+                        'Id Card: ',
+                        style: poppinsBold.copyWith(fontSize: 18),
+                      ),
+                      SizedBox(
+                          width: 200,
+                          height: 140,
+                          child: Image(
+                              image: NetworkImage(
+                                  "https://support.fortissio.com/hc/article_attachments/360007170598/ID-front-EN.png"))),
                     ],
                   ),
                 ),

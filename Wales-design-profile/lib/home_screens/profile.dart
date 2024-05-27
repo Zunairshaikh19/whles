@@ -33,6 +33,7 @@ class _ProfileState extends State<Profile> {
 
   @override
   void initState() {
+    _debounce?.cancel();
     super.initState();
     userDataFuture = getUserData();
   }
@@ -103,11 +104,9 @@ class _ProfileState extends State<Profile> {
   }
 
   void goToAccounts(BuildContext context, int index) {
-    if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
-      Navigator.of(context).push(
-        MaterialPageRoute(builder: (context) => profileScreens[index]),
-      );
+    setState(() {
+      Navigator.of(context)
+          .push(MaterialPageRoute(builder: (context) => profileScreens[index]));
     });
   }
 
@@ -397,7 +396,9 @@ class _ProfileState extends State<Profile> {
               physics: const ClampingScrollPhysics(),
               itemBuilder: (context, index) {
                 return GestureDetector(
-                  onTap: () => goToAccounts(context, index),
+                  onTap: () => setState(() {
+                    goToAccounts(context, index);
+                  }),
                   child: ProfileCards(
                     image: images[index],
                     title: profileTitles[index],

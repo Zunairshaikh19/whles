@@ -1,5 +1,6 @@
 import 'package:app/constants/app_colors.dart';
 import 'package:app/constants/typography.dart';
+import 'package:app/profile/create_account.dart';
 import 'package:app/widgets/custom_buttons.dart';
 import 'package:flutter/material.dart';
 
@@ -39,12 +40,14 @@ class PaymentSuccessView extends StatelessWidget {
                       color: AppColors.primaryColor,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    padding: const EdgeInsets.symmetric(horizontal: 33, vertical: 48),
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 33, vertical: 48),
                     child: Column(
                       children: [
                         Text(
                           'Success',
-                          style: poppinsMedium.copyWith(fontSize: 18, color: AppColors.greenColor),
+                          style: poppinsMedium.copyWith(
+                              fontSize: 18, color: AppColors.greenColor),
                         ),
                         const SizedBox(height: 29),
                         Container(
@@ -59,12 +62,14 @@ class PaymentSuccessView extends StatelessWidget {
                               const SizedBox(height: 18),
                               Text(
                                 '3 Shares buying',
-                                style: poppinsMedium.copyWith(fontSize: 13, color: AppColors.purpleColor),
+                                style: poppinsMedium.copyWith(
+                                    fontSize: 13, color: AppColors.purpleColor),
                               ),
                               const SizedBox(height: 7),
                               Text(
                                 '\$15.00',
-                                style: poppinsMedium.copyWith(fontSize: 18, color: AppColors.purpleColor),
+                                style: poppinsMedium.copyWith(
+                                    fontSize: 18, color: AppColors.purpleColor),
                               ),
                             ],
                           ),
@@ -72,7 +77,8 @@ class PaymentSuccessView extends StatelessWidget {
                         const SizedBox(height: 30),
                         Text(
                           'Your Buy Request for Received',
-                          style: poppinsMedium.copyWith(fontSize: 16, color: Colors.black),
+                          style: poppinsMedium.copyWith(
+                              fontSize: 16, color: Colors.black),
                         ),
                         const SizedBox(height: 20),
                       ],
@@ -85,9 +91,11 @@ class PaymentSuccessView extends StatelessWidget {
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
                         color: Colors.white,
-                        border: Border.all(color: AppColors.greenColor, width: 2),
+                        border:
+                            Border.all(color: AppColors.greenColor, width: 2),
                       ),
-                      child: const Icon(Icons.check, color: AppColors.greenColor, size: 30),
+                      child: const Icon(Icons.check,
+                          color: AppColors.greenColor, size: 30),
                     ),
                   ),
                 ],
@@ -95,7 +103,14 @@ class PaymentSuccessView extends StatelessWidget {
               const Spacer(),
               PrimaryButton(
                 title: 'Next',
-                onTap: () {},
+                onTap: () {
+                  Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) =>
+                              const CreateAccount('User') //SignUpView(),
+                          ));
+                },
               ),
             ],
           ),
