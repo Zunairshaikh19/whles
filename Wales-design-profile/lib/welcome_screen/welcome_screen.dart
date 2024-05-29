@@ -82,6 +82,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
           userData['password'] == passController.text) {
         // Save userId to shared preferences
         await prefs.setString('userId', userDoc.id);
+        await prefs.setString('email', emailController.text);
 
         Navigator.of(context).pushAndRemoveUntil(
             MaterialPageRoute(builder: (_) {
@@ -172,7 +173,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
           SaveduserId = userId;
           SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('userId', SaveduserId);
+          await prefs.setString('userId', email);
           print('User data saved to Firestore successfully!');
         } else {
           print('User data already exists in Firestore.');

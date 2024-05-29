@@ -213,23 +213,73 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        elevation: 0,
-        backgroundColor: AppTheme.greyColor,
-      ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            const SizedBox(
-              height: 15,
-            ),
-            CircleAvatar(
-              radius: 54,
-              child: FutureBuilder<Map<String, dynamic>?>(
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              const SizedBox(
+                height: 15,
+              ),
+              CircleAvatar(
+                radius: 54,
+                child: FutureBuilder<Map<String, dynamic>?>(
+                  future: userDataFuture,
+                  builder: (context, snapshot) {
+                    if (snapshot.connectionState == ConnectionState.waiting) {
+                      return CircularProgressIndicator(); // Show a loading indicator while waiting for user data
+                    } else {
+                      if (snapshot.hasError) {
+                        return Text(
+                          'Error fetching data',
+                          style: poppinsMedium.copyWith(fontSize: 24),
+                        );
+                      } else {
+                        // Extracting profile picture URL from user data
+                        Map<String, dynamic>? userData = snapshot.data;
+                        if (userData != null &&
+                            userData.containsKey('profilePicture')) {
+                          String profilePictureUrl = userData['profilePicture'];
+                          return profilePictureUrl.isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(100),
+                                  child: Image.network(
+                                    profilePictureUrl,
+                                    fit: BoxFit.fill,
+                                    width: 100,
+                                    height: 100,
+                                  ),
+                                )
+                              : Text("No Image");
+                        } else {
+                          // Show default image if profile picture URL is not available
+                          return ClipRRect(
+                            borderRadius: BorderRadius.circular(100),
+                            child: profileUrl != null || profileUrl.isNotEmpty
+                                ? Image.asset(
+                                    profileUrl,
+                                    fit: BoxFit.fill,
+                                    width: 100,
+                                    height: 100,
+                                  )
+                                : Text("No Image"),
+                          );
+                        }
+                      }
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(
+                height: 15,
+              ),
+              FutureBuilder<Map<String, dynamic>?>(
                 future: userDataFuture,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return CircularProgressIndicator(); // Show a loading indicator while waiting for user data
+                    return Text(
+                      'Loading...',
+                      style: poppinsMedium.copyWith(fontSize: 24),
+                    );
                   } else {
                     if (snapshot.hasError) {
                       return Text(
@@ -237,177 +287,125 @@ class _ProfileState extends State<Profile> {
                         style: poppinsMedium.copyWith(fontSize: 24),
                       );
                     } else {
-                      // Extracting profile picture URL from user data
+                      // Extracting displayName from user data
                       Map<String, dynamic>? userData = snapshot.data;
                       if (userData != null &&
-                          userData.containsKey('profilePicture')) {
-                        String profilePictureUrl = userData['profilePicture'];
-                        return profilePictureUrl.isNotEmpty
-                            ? ClipRRect(
-                                borderRadius: BorderRadius.circular(100),
-                                child: Image.network(
-                                  profilePictureUrl,
-                                  fit: BoxFit.fill,
-                                  width: 100,
-                                  height: 100,
-                                ),
-                              )
-                            : Text("No Image");
+                          userData.containsKey('displayName')) {
+                        String displayName = userData['displayName'];
+                        return Text(
+                          displayName,
+                          style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Poppins',
+                              color: AppTheme.blackColor),
+                        );
                       } else {
-                        // Show default image if profile picture URL is not available
-                        return ClipRRect(
-                          borderRadius: BorderRadius.circular(100),
-                          child: profileUrl != null || profileUrl.isNotEmpty
-                              ? Image.asset(
-                                  profileUrl,
-                                  fit: BoxFit.fill,
-                                  width: 100,
-                                  height: 100,
-                                )
-                              : Text("No Image"),
+                        return Text(
+                          'No display name found',
+                          style: poppinsMedium.copyWith(fontSize: 24),
                         );
                       }
                     }
                   }
                 },
               ),
-            ),
-            const SizedBox(
-              height: 15,
-            ),
-            FutureBuilder<Map<String, dynamic>?>(
-              future: userDataFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Text(
-                    'Loading...',
-                    style: poppinsMedium.copyWith(fontSize: 24),
-                  );
-                } else {
-                  if (snapshot.hasError) {
+              const SizedBox(
+                height: 5,
+              ),
+              FutureBuilder<Map<String, dynamic>?>(
+                future: userDataFuture,
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
                     return Text(
-                      'Error fetching data',
+                      'Loading...',
                       style: poppinsMedium.copyWith(fontSize: 24),
                     );
                   } else {
-                    // Extracting displayName from user data
-                    Map<String, dynamic>? userData = snapshot.data;
-                    if (userData != null &&
-                        userData.containsKey('displayName')) {
-                      String displayName = userData['displayName'];
+                    if (snapshot.hasError) {
                       return Text(
-                        displayName,
-                        style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w600,
-                            fontFamily: 'Poppins',
-                            color: AppTheme.blackColor),
-                      );
-                    } else {
-                      return Text(
-                        'No display name found',
+                        'Error fetching data',
                         style: poppinsMedium.copyWith(fontSize: 24),
                       );
+                    } else {
+                      // Extracting email from user data
+                      Map<String, dynamic>? userData = snapshot.data;
+                      if (userData != null && userData.containsKey('email')) {
+                        String email = userData['email'];
+                        return Text(
+                          email,
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w400,
+                              fontFamily: 'Poppins',
+                              color: AppTheme.kCustomnavGrayColor),
+                        );
+                      } else {
+                        return Text(
+                          'No email found',
+                          style: poppinsMedium.copyWith(fontSize: 24),
+                        );
+                      }
                     }
                   }
-                }
-              },
-            ),
-            const SizedBox(
-              height: 5,
-            ),
-            FutureBuilder<Map<String, dynamic>?>(
-              future: userDataFuture,
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return Text(
-                    'Loading...',
-                    style: poppinsMedium.copyWith(fontSize: 24),
-                  );
-                } else {
-                  if (snapshot.hasError) {
-                    return Text(
-                      'Error fetching data',
-                      style: poppinsMedium.copyWith(fontSize: 24),
-                    );
+                },
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              CustomButton(
+                isButtonEnable: true,
+                height: 34,
+                radius: 26,
+                width: 150,
+                onPress: () async {
+                  bool alreadyApplied =
+                      await checkUserAlreadyApplied(SaveduserId);
+                  if (alreadyApplied) {
+                    showAlreadyAppliedDialog();
                   } else {
-                    // Extracting email from user data
-                    Map<String, dynamic>? userData = snapshot.data;
-                    if (userData != null && userData.containsKey('email')) {
-                      String email = userData['email'];
-                      return Text(
-                        email,
-                        style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w400,
-                            fontFamily: 'Poppins',
-                            color: AppTheme.kCustomnavGrayColor),
-                      );
-                    } else {
-                      return Text(
-                        'No email found',
-                        style: poppinsMedium.copyWith(fontSize: 24),
-                      );
-                    }
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) {
+                          return const VerifyProfileView();
+                        },
+                      ),
+                    );
                   }
-                }
-              },
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            CustomButton(
-              isButtonEnable: true,
-              height: 34,
-              radius: 26,
-              width: 150,
-              onPress: () async {
-                bool alreadyApplied =
-                    await checkUserAlreadyApplied(SaveduserId);
-                if (alreadyApplied) {
-                  showAlreadyAppliedDialog();
-                } else {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) {
-                        return const VerifyProfileView();
-                      },
+                },
+                text: "Complete setup",
+                fontSize: 12,
+                fontColor: AppTheme.blackColor,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Poppins',
+                containerColor: AppTheme.whiteColor,
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              const Divider(),
+              const SizedBox(
+                height: 20,
+              ),
+              ListView.builder(
+                itemCount: images.length,
+                shrinkWrap: true,
+                physics: const ClampingScrollPhysics(),
+                itemBuilder: (context, index) {
+                  return GestureDetector(
+                    onTap: () => setState(() {
+                      goToAccounts(context, index);
+                    }),
+                    child: ProfileCards(
+                      image: images[index],
+                      title: profileTitles[index],
+                      subtitle: profileSubtitles[index],
                     ),
                   );
-                }
-              },
-              text: "Complete setup",
-              fontSize: 12,
-              fontColor: AppTheme.blackColor,
-              fontWeight: FontWeight.w500,
-              fontFamily: 'Poppins',
-              containerColor: AppTheme.whiteColor,
-            ),
-            const SizedBox(
-              height: 10,
-            ),
-            const Divider(),
-            const SizedBox(
-              height: 20,
-            ),
-            ListView.builder(
-              itemCount: images.length,
-              shrinkWrap: true,
-              physics: const ClampingScrollPhysics(),
-              itemBuilder: (context, index) {
-                return GestureDetector(
-                  onTap: () => setState(() {
-                    goToAccounts(context, index);
-                  }),
-                  child: ProfileCards(
-                    image: images[index],
-                    title: profileTitles[index],
-                    subtitle: profileSubtitles[index],
-                  ),
-                );
-              },
-            )
-          ],
+                },
+              )
+            ],
+          ),
         ),
       ),
     );
