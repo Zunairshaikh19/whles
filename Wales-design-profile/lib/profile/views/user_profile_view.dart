@@ -74,8 +74,9 @@ class _UserProfileViewState extends State<UserProfileView> {
             userDoc.data() as Map<String, dynamic>?;
         SharedPreferences prefs = await Constants.getPrefs();
         print(userData);
-        profilePicture = userData!['profilePicture'];
-        prefs.setString("displayName", userData['displayName']);
+        profilePicture = userData!['profileUrl'];
+        prefs.setString(
+            "displayName", '${userData['firstName']}  ${userData['lastName']}');
         return userData;
       } else {
         print('User document does not exist');
@@ -125,7 +126,8 @@ class _UserProfileViewState extends State<UserProfileView> {
         if (result.docs.isNotEmpty) {
           DocumentSnapshot userDoc = result.docs.first;
           String userId = userDoc.id;
-          String displayName = userDoc['displayName'] ?? "";
+          String displayName =
+              '${userDoc['firstName']}  ${userDoc['lastName']}';
           String email = userDoc['email'] ?? "";
 
           // Determine the image path based on authentication status
@@ -153,10 +155,11 @@ class _UserProfileViewState extends State<UserProfileView> {
             DocumentReference userDocRef =
                 firestore.collection('users').doc(userId);
             Map<String, dynamic> userData = {
-              'displayName': displayName,
+              'firstName': displayName.split(" ")[0],
+              'lastName': displayName.split(" ")[1],
               'email': email,
               'userId': userId,
-              'profilePicture': downloadUrl,
+              'profileUrl': downloadUrl,
             };
 
             if (passwordSet) {
@@ -204,17 +207,19 @@ class _UserProfileViewState extends State<UserProfileView> {
           String downloadUrl = await snapshot.ref.getDownloadURL();
           _pass == null
               ? await userDocRef.set({
-                  'displayName': _name ?? displayName,
+                  'firstName': displayName.split(" ")[0],
+                  'lastName': displayName.split(" ")[1],
                   'email': _email = email,
                   'userId': userId,
-                  'profilePicture': downloadUrl,
+                  'profileUrl': downloadUrl,
                 })
               : await userDocRef.set({
-                  'displayName': _name ?? displayName,
+                  'firstName': displayName.split(" ")[0],
+                  'lastName': displayName.split(" ")[1],
                   'email': _email = email,
                   'userId': userId,
                   'password': _pass ?? "",
-                  'profilePicture': downloadUrl,
+                  'profileUrl': downloadUrl,
                 });
           Navigator.pop(context);
         }
@@ -241,17 +246,19 @@ class _UserProfileViewState extends State<UserProfileView> {
           String downloadUrl = await snapshot.ref.getDownloadURL();
           _pass == null
               ? await userDocRef.set({
-                  'displayName': _name ?? displayName,
+                   'firstName': displayName.split(" ")[0],
+              'lastName': displayName.split(" ")[1],
                   'email': _email = email,
                   'userId': userId,
-                  'profilePicture': downloadUrl,
+                  'profileUrl': downloadUrl,
                 })
               : await userDocRef.set({
-                  'displayName': _name ?? displayName,
+                  'firstName': displayName.split(" ")[0],
+              'lastName': displayName.split(" ")[1],
                   'email': _email = email,
                   'userId': userId,
                   'password': _pass ?? "",
-                  'profilePicture': downloadUrl,
+                  'profileUrl': downloadUrl,
                 });
           Navigator.pop(context);
         }
@@ -283,17 +290,19 @@ class _UserProfileViewState extends State<UserProfileView> {
 
           _pass == null
               ? await userDocRef.set({
-                  'displayName': _name ?? displayName,
+                   'firstName': displayName.split(" ")[0],
+              'lastName': displayName.split(" ")[1],
                   'email': _email = email,
                   'userId': userId,
-                  'profilePicture': profilePicture,
+                  'profileUrl': profilePicture,
                 })
               : await userDocRef.set({
-                  'displayName': _name ?? displayName,
+                   'firstName': displayName.split(" ")[0],
+              'lastName': displayName.split(" ")[1],
                   'email': _email = email,
                   'userId': userId,
                   'password': _pass ?? "",
-                  'profilePicture': profilePicture,
+                  'profileUrl': profilePicture,
                 });
           Navigator.pop(context);
         }
@@ -377,9 +386,9 @@ class _UserProfileViewState extends State<UserProfileView> {
                           // Extracting profile picture URL from user data
                           Map<String, dynamic>? userData = snapshot.data;
                           if (userData != null &&
-                              userData.containsKey('profilePicture')) {
+                              userData.containsKey('profileUrl')) {
                             String profilePictureUrl =
-                                userData['profilePicture'];
+                                userData['profileUrl'];
                             return ClipRRect(
                               borderRadius: BorderRadius.circular(100),
                               child: profilePictureUrl.isNotEmpty ||
@@ -432,8 +441,8 @@ class _UserProfileViewState extends State<UserProfileView> {
                         // Extracting displayName from user data
                         Map<String, dynamic>? userData = snapshot.data;
                         if (userData != null &&
-                            userData.containsKey('displayName')) {
-                          String displayName = userData['displayName'];
+                            userData.containsKey('firstName')) {
+                          String displayName = '${userData['firstName']}  ${userData['lastName']}';
                           return Text(
                             displayName,
                             style: poppinsMedium.copyWith(fontSize: 24),
@@ -494,8 +503,8 @@ class _UserProfileViewState extends State<UserProfileView> {
                                 // Extracting displayName from user data
                                 Map<String, dynamic>? userData = snapshot.data;
                                 if (userData != null &&
-                                    userData.containsKey('displayName')) {
-                                  String displayName = userData['displayName'];
+                                    userData.containsKey('firstName')) {
+                                  String displayName = '${userData['firstName']}  ${userData['lastName']}';
                                   return GestureDetector(
                                     onTap: () {
                                       // Handle edit icon click

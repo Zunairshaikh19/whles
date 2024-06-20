@@ -6,11 +6,13 @@ import 'package:app/on_boarding_screens/on_boarding_main_page.dart';
 import 'package:app/profile/documents/document_view.dart';
 import 'package:app/profile/faq/faq_view.dart';
 import 'package:app/profile/feedback/main_feedback_view.dart';
+import 'package:app/profile/logout/logout.dart';
 import 'package:app/profile/notification/notification_view.dart';
 import 'package:app/profile/views/user_profile_view.dart';
 import 'package:app/profile/views/verify_profile_view.dart';
 import 'package:app/widgets/profile_cards.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Global/variable.dart';
@@ -30,6 +32,7 @@ class _ProfileState extends State<Profile> {
   String lastName = '';
   String email = '';
   String profileUrl = '';
+
 
   @override
   void initState() {
@@ -51,7 +54,8 @@ class _ProfileState extends State<Profile> {
     'assets/documents-folder.png',
     'assets/message-question.png',
     'assets/FAQ.png',
-    'assets/Feedback.png'
+    'assets/Feedback.png',
+    'assets/bankAccount.png',
   ];
   List<Widget> profileScreens = [
     const UserProfileView(),
@@ -60,7 +64,8 @@ class _ProfileState extends State<Profile> {
     const DocumentView(),
     const NotificationView(),
     const FaqView(),
-    const MainFeedbackView()
+    const MainFeedbackView(),
+    const Logout()
   ];
   List<String> profileTitles = [
     'View Profile',
@@ -70,6 +75,7 @@ class _ProfileState extends State<Profile> {
     'Help',
     'FAQs',
     'Feedback',
+    'Logout'
   ];
   Timer? _debounce;
 
@@ -80,16 +86,17 @@ class _ProfileState extends State<Profile> {
     'Statement . Taxes. Legals',
     'Contact Support',
     'Find answers to commonly asked questions',
-    'Give feedback on our app'
+    'Give feedback on our app',
+    'Logout from the app'
   ];
 
   void logout() async {
-    // FirebaseAuth.instance.signOut().then((value) async {
-    //   // ignore: await_only_futures
-    //   SharedPreferences? prefs = await Constants.prefs;
-    //   prefs!.clear();
-    //   signOut();
-    // }).catchError((onError) {});
+    FirebaseAuth.instance.signOut().then((value) async {
+      // ignore: await_only_futures
+      SharedPreferences? prefs = await Constants.prefs;
+      prefs!.clear();
+      signOut();
+    }).catchError((onError) {});
   }
 
   void signOut() async {
@@ -115,8 +122,8 @@ class _ProfileState extends State<Profile> {
     setState(() {
       firstName = prefs.getString("firstName") ?? '';
       lastName = prefs.getString("lastName") ?? '';
-
       profileUrl = prefs.getString("profileUrl") ?? Constants.noImage;
+
       email = prefs.getString("email") ?? '';
     });
   }
@@ -237,8 +244,8 @@ class _ProfileState extends State<Profile> {
                         // Extracting profile picture URL from user data
                         Map<String, dynamic>? userData = snapshot.data;
                         if (userData != null &&
-                            userData.containsKey('profilePicture')) {
-                          String profilePictureUrl = userData['profilePicture'];
+                            userData.containsKey('profileUrl')) {
+                          String profilePictureUrl = userData['profileUrl'];
                           return profilePictureUrl.isNotEmpty
                               ? ClipRRect(
                                   borderRadius: BorderRadius.circular(100),
@@ -290,8 +297,8 @@ class _ProfileState extends State<Profile> {
                       // Extracting displayName from user data
                       Map<String, dynamic>? userData = snapshot.data;
                       if (userData != null &&
-                          userData.containsKey('displayName')) {
-                        String displayName = userData['displayName'];
+                          userData.containsKey('firstName')) {
+                        String displayName = "${userData['firstName']} ${userData['lastName']}";
                         return Text(
                           displayName,
                           style: TextStyle(

@@ -1,14 +1,12 @@
-// ignore_for_file: use_build_context_synchronously
-
 import 'package:app/home_screens/bottom_navigation.dart';
+import 'package:app/models/trading_model.dart';
 import 'package:app/profile/create_account.dart';
-import 'package:app/profile/user_type.dart';
 import 'package:app/widgets/custom_text_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import '../app_theme.dart';
-import '../check_profile.dart';
 import '../constants.dart';
 import '../profile/forget_password.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -42,58 +40,72 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void goToUserType() {
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) {
-          return const BottomNavigation();
-        },
-      ),
-    );
+    Get.offAll(() => const BottomNavigation());
   }
 
   void login() async {
+    if(emailController.text.isEmpty || passController.text.isEmpty){
+      Constants.showMessage(context, "Please fill all fields");
+      return;
+    }
     setState(() {
       loading = true;
     });
-    SharedPreferences prefs = await SharedPreferences.getInstance();
-    String? userId = prefs.getString('userId');
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    DocumentSnapshot? userDoc;
-    if (userId != null) {
-      // Retrieve user document by userId
-      DocumentReference userDocRef = firestore.collection('users').doc(userId);
-      userDoc = await userDocRef.get();
+    UserCredential userCredential =
+          await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: emailController.text,
+        password: passController.text,
+      );
+    
+    if (userCredential.user != null) {
+      await TradingModel.addingAlll();
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userId', userCredential.user!.uid);
+      await prefs.setString('email', emailController.text);
+      goToUserType();
     } else {
-      // Retrieve user document by email if userId is null
-      QuerySnapshot querySnapshot = await firestore
-          .collection('users')
-          .where('email', isEqualTo: emailController.text)
-          .get();
-      if (querySnapshot.docs.isNotEmpty) {
-        userDoc = querySnapshot.docs.first;
-      }
+      Constants.showMessage(context, "Wrong Credentials");
     }
+    // SharedPreferences prefs = await SharedPreferences.getInstance();
+    // String? userId = prefs.getString('userId');
+    // FirebaseFirestore firestore = FirebaseFirestore.instance;
 
-    if (userDoc != null && userDoc.exists) {
-      Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
+    // DocumentSnapshot? userDoc;
+    // if (userId != null) {
+    //   // Retrieve user document by userId
+    //   DocumentReference userDocRef = firestore.collection('users').doc(userId);
+    //   userDoc = await userDocRef.get();
+    // } else {
+    //   // Retrieve user document by email if userId is null
+    //   QuerySnapshot querySnapshot = await firestore
+    //       .collection('users')
+    //       .where('email', isEqualTo: emailController.text)
+    //       .get();
+    //   if (querySnapshot.docs.isNotEmpty) {
+    //     userDoc = querySnapshot.docs.first;
+    //   }
+    // }
 
-      if (userData!['email'] == emailController.text &&
-          userData['password'] == passController.text) {
-        // Save userId to shared preferences
-        await prefs.setString('userId', userDoc.id);
-        await prefs.setString('email', emailController.text);
+    // if (userDoc != null && userDoc.exists) {
+    //   Map<String, dynamic>? userData = userDoc.data() as Map<String, dynamic>?;
 
-        Navigator.of(context).pushAndRemoveUntil(
-            MaterialPageRoute(builder: (_) {
-          return const CheckProfile();
-        }), (route) => false);
-      } else {
-        Constants.showMessage(context, "Wrong Credentials");
-      }
-    } else {
-      Constants.showMessage(context, "User does not exist");
-    }
+    //   if (userData!['email'] == emailController.text &&
+    //       userData['password'] == passController.text) {
+    //     // Save userId to shared preferences
+    //     await prefs.setString('userId', userDoc.id);
+    //     await prefs.setString('email', emailController.text);
+
+    //     Navigator.of(context).pushAndRemoveUntil(
+    //         MaterialPageRoute(builder: (_) {
+    //       return const CheckProfile();
+    //     }), (route) => false);
+    //   } else {
+    //     Constants.showMessage(context, "Wrong Credentials");
+    //   }
+    // } else {
+    //   Constants.showMessage(context, "User does not exist");
+    // }
     setState(() {
       loading = false;
     });
@@ -287,7 +299,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 isButtonEnable: isButtonEnabled,
                 height: 56,
                 onPress: login,
-                text: "Sign In",
+                text: loading ? "Signing in....": "Sign In",
                 fontColorAlt: Colors.black,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

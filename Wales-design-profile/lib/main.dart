@@ -1,9 +1,7 @@
-import 'package:app/check_profile.dart';
-import 'package:app/home_screens/profile.dart';
-import 'package:app/on_boarding_screens/on_boarding_main_page.dart';
 import 'package:app/splash_screen/splash_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'app_theme.dart';
 
 void main() async {
@@ -33,7 +31,7 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       title: 'The Offering MarketPlace',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.getCurrentTheme(isDark),
