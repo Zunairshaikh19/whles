@@ -86,7 +86,7 @@ class _AllState extends State<All> {
         WidgetsBinding.instance?.addPostFrameCallback((_) {
           // Show snack bar indicating no properties found
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
+            const SnackBar(
               content: Text('No properties found.'),
             ),
           );
@@ -147,8 +147,8 @@ class _AllState extends State<All> {
                     showView: true,
                   ),
                   SizedBox(
-                    height: 209,
-                    child: MostViewedList(mostViewList: mostViewList),
+                    height: 240,
+                    child: TradingList(tradingList: tradingList),
                   ),
                   const SizedBox(
                     height: 30,
@@ -205,10 +205,10 @@ class _AllState extends State<All> {
                     height: 10,
                   ),
                   Padding(
-                    padding: EdgeInsets.all(8.0),
+                    padding: const EdgeInsets.all(8.0),
                     child: tradingList.isNotEmpty
-                        ? TradingBigCard(tradingList: tradingList[0]!)
-                        : SizedBox(), // Or provide a placeholder widget when the list is empty
+                        ? TradingBigCard(tradingList: tradingList[0])
+                        : const SizedBox(), // Or provide a placeholder widget when the list is empty
                   ),
                   const SizedBox(
                     height: 10,

@@ -1,5 +1,4 @@
 import 'package:app/models/most_viewed_model.dart';
-import 'package:app/models/trading_model.dart';
 import 'package:app/widgets/most_viewed_container.dart';
 import 'package:flutter/material.dart';
 

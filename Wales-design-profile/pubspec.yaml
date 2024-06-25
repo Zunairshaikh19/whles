@@ -32,6 +32,9 @@ dependencies:
   signature: ^5.4.1
   google_sign_in: ^5.0.4
   share_plus: ^7.2.2
+  get: ^4.6.6
+  flutter_colorpicker: ^1.1.0
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:

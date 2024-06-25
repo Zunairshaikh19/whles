@@ -25,7 +25,7 @@ class TradingBigCard extends StatelessWidget {
               borderRadius: const BorderRadius.only(
                   topLeft: Radius.circular(10), topRight: Radius.circular(10)),
               child: Image(
-                image: NetworkImage(
+                image: AssetImage(
                   tradingList.carouselImages.isNotEmpty
                       ? tradingList.carouselImages[0]
                       : "assets/placeholder_image.png",

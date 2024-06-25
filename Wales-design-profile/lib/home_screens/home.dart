@@ -3,8 +3,6 @@ import 'package:app/home_screens/tabs/all.dart';
 import 'package:app/home_screens/widgets/filter_sheet.dart';
 import 'package:app/widgets/customfieldsearch.dart';
 import 'package:flutter/material.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../widgets/custom_text_field.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -42,7 +40,7 @@ class _HomeState extends State<Home> {
       builder: (context) {
         return Container(
           height: MediaQuery.of(context).size.height * 0.8,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.vertical(top: Radius.circular(25.0)),
           ),

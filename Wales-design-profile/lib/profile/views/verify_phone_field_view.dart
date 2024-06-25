@@ -24,7 +24,7 @@ class _VerifyPhoneFieldViewState extends State<VerifyPhoneFieldView> {
     String phone = phoneNumber.text.trim();
 
     await _auth.verifyPhoneNumber(
-      phoneNumber: phone,
+      phoneNumber: '+92$phone',
       verificationCompleted: (PhoneAuthCredential credential) async {
         await _auth.signInWithCredential(credential);
         // Navigate to home screen if you have one
@@ -81,6 +81,9 @@ class _VerifyPhoneFieldViewState extends State<VerifyPhoneFieldView> {
                   CustomTextFormField(
                     hintText: 'Phone number',
                     controller: phoneNumber,
+                    keyBoardType: TextInputType.phone,
+                    prefixText: '+92',
+                    maxLength: 10,
                   ),
                   const Spacer(),
                   PrimaryButton(

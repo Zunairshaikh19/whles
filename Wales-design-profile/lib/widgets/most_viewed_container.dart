@@ -25,7 +25,7 @@ class MostViewedContainer extends StatelessWidget {
             height: 189,
             width: 108,
             child: Image(
-              image: NetworkImage(
+              image: AssetImage(
                 mostViewedList.carouselImages.isNotEmpty
                     ? mostViewedList.carouselImages[0]
                     : "assets/placeholder_image.png",
