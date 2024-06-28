@@ -67,10 +67,11 @@ class Constants {
   //   });
   // }
 
-  static InputDecoration getInputDecoration(String hint, bool? isPass,
+  static InputDecoration getInputDecoration(String hint, bool? isPass,String? prefixText,
       Widget? widget, String prefixIcon, Color? hintTextColor) {
     return InputDecoration(
       border: InputBorder.none,
+      prefixText: prefixText,
       hintText: hint,
       hintStyle: TextStyle(
         color: hintTextColor,

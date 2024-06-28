@@ -1,7 +1,8 @@
-import 'package:app/home_screens/bottom_navigation.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:app/models/public_profile_model.dart';
+import 'package:app/welcome_screen/welcome_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../app_theme.dart';
 import '../constants.dart';
@@ -23,10 +24,20 @@ class _CreateAccountState extends State<CreateAccount> {
   final TextEditingController firstNameController = TextEditingController();
   final TextEditingController lastNameController = TextEditingController();
   final TextEditingController phoneNoController = TextEditingController();
+  final TextEditingController addressController = TextEditingController();
+  final TextEditingController genderController = TextEditingController();
+  final TextEditingController ageController = TextEditingController();
+  final TextEditingController nationalityController = TextEditingController();
+
   bool isObscurePass = true;
   bool isObscureConfirmPass = true;
   bool isButtonEnabled = false;
   bool loading = false;
+  final List role = ['Student', 'Employer', 'UnEmployed', 'Other'];
+  final List genderData = ['Male', 'Female', 'Other'];
+  String selectedRole = 'Student';
+  String selected = '';
+  String countryCode = "+92";
 
   @override
   void initState() {
@@ -59,6 +70,31 @@ class _CreateAccountState extends State<CreateAccount> {
           lastNameController.text.isNotEmpty &&
           phoneNoController.text.isNotEmpty;
     });
+  }
+
+  Widget phoneNumber() {
+    return Container(
+      height: 55,
+      padding: const EdgeInsets.only(top: 20,right: 10,bottom: 10,left: 10),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppTheme.whiteColor,),
+      ),
+      child: IntlPhoneField(
+        controller: phoneNoController,
+        dropdownTextStyle: const TextStyle(color: Colors.white, fontSize: 15),
+        dropdownIcon: const Icon(
+          Icons.arrow_drop_down,
+          color: Colors.white,
+        ),
+        initialCountryCode: countryCode,
+        onChanged: (phone) {
+          
+        },
+        style: const TextStyle(
+          color: Colors.white,
+        ),
+      ),
+    );
   }
 
   // Future<void> register() async {
@@ -124,7 +160,7 @@ class _CreateAccountState extends State<CreateAccount> {
   //     });
   //   }
   // }
-  Future<void> register() async {
+  void register() async {
     if (!checkCredentials()) {
       return;
     }
@@ -140,29 +176,33 @@ class _CreateAccountState extends State<CreateAccount> {
         password: passController.text,
       );
 
-      // Fetch user ID
-      String userId = userCredential.user!.uid;
+      if (userCredential.user != null) {
+        // Fetch user ID
+        String userId = userCredential.user!.uid;
+        PublicProfileModel profileModel = PublicProfileModel(
+          id: userId,
+          firstName: firstNameController.text.trim(),
+          lastName: lastNameController.text.trim(),
+          phoneNo: '$countryCode${phoneNoController.text.trim()}',
+          age: ageController.text.trim(),
+          gender: "",
+          address: addressController.text.trim(),
+          nationality: nationalityController.text.trim(),
+          role: selectedRole,
+          email: emailController.text.trim(),
+          profileUrl: 'https://www.w3schools.com/howto/img_avatar.png',
+        );
 
-      // Store user details in Firestore
-      await FirebaseFirestore.instance.collection('users').doc(userId).set({
-        'firstName': firstNameController.text.trim(),
-        'lastName': lastNameController.text.trim(),
-        'phoneNumber': phoneNoController.text.trim(),
-        'email': emailController.text.trim(),
-        'displayName': firstNameController.text.trim() +
-            " " +
-            lastNameController.text.trim(),
-        'profilePicture': "",
-        'userType': widget.userType,
-        'password': passController.text.trim(),
-      });
+        await PublicProfileModel.addPublicProfile(profileModel);
 
-      // Save user ID using SharedPreferences
-      SharedPreferences prefs = await SharedPreferences.getInstance();
-      prefs.setString('userId', userId);
-      prefs.setString('email', emailController.text.trim());
+        // Save user ID using SharedPreferences
+        SharedPreferences prefs = await SharedPreferences.getInstance();
+        prefs.setString('userId', userId);
+        prefs.setString('email', emailController.text.trim());
+        prefs.setString('role', selectedRole);
 
-      goTo();
+        goTo();
+      }
     } on FirebaseAuthException catch (e) {
       Constants.showMessage(context, e.message!);
     } catch (e) {
@@ -176,7 +216,7 @@ class _CreateAccountState extends State<CreateAccount> {
 
   void goTo() {
     Navigator.of(context).pushAndRemoveUntil(
-      MaterialPageRoute(builder: (_) => const BottomNavigation()),
+      MaterialPageRoute(builder: (_) => const WelcomeScreen()),
       (route) => false,
     );
   }
@@ -190,6 +230,23 @@ class _CreateAccountState extends State<CreateAccount> {
     if (lastNameController.text.isEmpty ||
         !RegExp(r'^[a-zA-Z]+$').hasMatch(lastNameController.text)) {
       Constants.showMessage(context, "Please enter a valid last name");
+      return false;
+    }
+    if (selectedRole.isEmpty) {
+      Constants.showMessage(context, "Please select a role");
+      return false;
+    }
+    if (ageController.text.isEmpty ||
+        !RegExp(r'^\+?\d+$').hasMatch(ageController.text)) {
+      Constants.showMessage(context, "Please enter a valid age");
+      return false;
+    }
+    if (addressController.text.isEmpty) {
+      Constants.showMessage(context, "Please enter a valid address");
+      return false;
+    }
+    if (nationalityController.text.isEmpty) {
+      Constants.showMessage(context, "Please enter nationality");
       return false;
     }
     if (phoneNoController.text.isEmpty ||
@@ -262,10 +319,28 @@ class _CreateAccountState extends State<CreateAccount> {
                 hintTextColor: Colors.white,
               ),
               const SizedBox(height: 15),
+              phoneNumber(),
+              const SizedBox(height: 15),
               CustomTextField(
-                controller: phoneNoController,
+                controller: addressController,
                 prefixIcon: '',
-                hintText: 'Phone Number',
+                hintText: 'Address',
+                hintTextColor: Colors.white,
+                maxlines: 3,
+              ),
+              const SizedBox(height: 15),
+              CustomTextField(
+                controller: ageController,
+                textInputType: TextInputType.number,
+                prefixIcon: '',
+                hintText: 'Age',
+                hintTextColor: Colors.white,
+              ),
+              const SizedBox(height: 15),
+              CustomTextField(
+                controller: nationalityController,
+                prefixIcon: '',
+                hintText: 'Nationality',
                 hintTextColor: Colors.white,
               ),
               const SizedBox(height: 15),
