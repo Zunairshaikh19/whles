@@ -16,6 +16,7 @@ import 'package:app/widgets/profile_cards.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../Global/variable.dart';
 import '../app_theme.dart';
@@ -34,7 +35,8 @@ class _ProfileState extends State<Profile> {
   String lastName = '';
   String email = '';
   String profileUrl = '';
-
+  String uid = '';
+  final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email']);
 
   @override
   void initState() {
@@ -93,12 +95,21 @@ class _ProfileState extends State<Profile> {
   ];
 
   void logout() async {
-    FirebaseAuth.instance.signOut().then((value) async {
-      // ignore: await_only_futures
-      SharedPreferences? prefs = await Constants.prefs;
-      prefs!.clear();
-      signOut();
-    }).catchError((onError) {});
+    googleSignIn.isSignedIn().then((value) {
+      if (value) {
+        googleSignIn.signOut();
+        signOut();
+        SharedPreferences? prefs = Constants.prefs;
+        prefs!.clear();
+      }else{
+        FirebaseAuth.instance.signOut().then((value) async {
+          signOut();
+          SharedPreferences? prefs = Constants.prefs;
+          prefs!.clear();
+        }).catchError((onError) {});
+      }
+    });
+    
   }
 
   void signOut() async {
@@ -125,7 +136,7 @@ class _ProfileState extends State<Profile> {
       firstName = prefs.getString("firstName") ?? '';
       lastName = prefs.getString("lastName") ?? '';
       profileUrl = prefs.getString("profileUrl") ?? Constants.noImage;
-
+      uid = prefs.getString("userId") ?? '';
       email = prefs.getString("email") ?? '';
     });
   }
@@ -188,15 +199,20 @@ class _ProfileState extends State<Profile> {
     }
   }
 
-  Future<bool> checkUserAlreadyApplied(String userId) async {
+  Future<bool> checkUserAlreadyApplied() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userId = prefs.getString('userId') ?? '';
+    print('Checking if user already applied with userId: $userId');
     FirebaseFirestore firestore = FirebaseFirestore.instance;
-    QuerySnapshot snapshot = await firestore
-        .collection('onBoarding')
-        .where('userId', isEqualTo: userId)
-        .limit(1)
-        .get();
+    DocumentReference snapshot =
+        await firestore.collection('onBoarding').doc(userId);
 
-    return snapshot.docs.isNotEmpty;
+    return snapshot.get().then((doc) {
+      return doc.exists;
+    }).catchError((e) {
+      print('Error checking if user already applied: $e');
+      return false;
+    });
   }
 
   void showAlreadyAppliedDialog() {
@@ -300,7 +316,8 @@ class _ProfileState extends State<Profile> {
                       Map<String, dynamic>? userData = snapshot.data;
                       if (userData != null &&
                           userData.containsKey('firstName')) {
-                        String displayName = "${userData['firstName']} ${userData['lastName']}";
+                        String displayName =
+                            "${userData['firstName']} ${userData['lastName']}";
                         return Text(
                           displayName,
                           style: TextStyle(
@@ -368,8 +385,7 @@ class _ProfileState extends State<Profile> {
                 radius: 26,
                 width: 150,
                 onPress: () async {
-                  bool alreadyApplied =
-                      await checkUserAlreadyApplied(SaveduserId);
+                  bool alreadyApplied = await checkUserAlreadyApplied();
                   if (alreadyApplied) {
                     showAlreadyAppliedDialog();
                   } else {

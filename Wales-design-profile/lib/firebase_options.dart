@@ -23,20 +23,11 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -50,19 +41,53 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyA7wWXI3VWAFdtvY3x9SDhSC8dYClZkf3Q',
-    appId: '1:973470097911:web:931feb5d27e4b8d5f94ef2',
-    messagingSenderId: '973470097911',
-    projectId: 'walls-9a8d5',
-    authDomain: 'walls-9a8d5.firebaseapp.com',
-    storageBucket: 'walls-9a8d5.appspot.com',
+    apiKey: 'AIzaSyA_lB2V6mg_sAQbGNAGJbaau9kcq1CDHH4',
+    appId: '1:1030343360675:web:0ff554d90824298561bf16',
+    messagingSenderId: '1030343360675',
+    projectId: 'whales-fc802',
+    authDomain: 'whales-fc802.firebaseapp.com',
+    storageBucket: 'whales-fc802.appspot.com',
+    measurementId: 'G-VN9YFP1PC7',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDW6xS4WIsONykk_sZdj3WaY8YHp6YSIaU',
-    appId: '1:973470097911:android:d03b8ef4dc80373bf94ef2',
-    messagingSenderId: '973470097911',
-    projectId: 'walls-9a8d5',
-    storageBucket: 'walls-9a8d5.appspot.com',
+    apiKey: 'AIzaSyCarBUs9RFr-V0tsoSjSH3WE3kr996iQsc',
+    appId: '1:1030343360675:android:29706028b894348561bf16',
+    messagingSenderId: '1030343360675',
+    projectId: 'whales-fc802',
+    storageBucket: 'whales-fc802.appspot.com',
   );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyDC_BNSNyLG97EgjTrphw7mFl-VaiiFZv0',
+    appId: '1:1030343360675:ios:1a6e3b79a646bdf861bf16',
+    messagingSenderId: '1030343360675',
+    projectId: 'whales-fc802',
+    storageBucket: 'whales-fc802.appspot.com',
+    androidClientId: '1030343360675-c9u04d07qpm1u8jpu79t7k2d7l6etc9h.apps.googleusercontent.com',
+    iosClientId: '1030343360675-j7f1arnvvfmaacod5jlvlfomor8kfeim.apps.googleusercontent.com',
+    iosBundleId: 'com.offeringmarketplace.app',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyDC_BNSNyLG97EgjTrphw7mFl-VaiiFZv0',
+    appId: '1:1030343360675:ios:1a6e3b79a646bdf861bf16',
+    messagingSenderId: '1030343360675',
+    projectId: 'whales-fc802',
+    storageBucket: 'whales-fc802.appspot.com',
+    androidClientId: '1030343360675-c9u04d07qpm1u8jpu79t7k2d7l6etc9h.apps.googleusercontent.com',
+    iosClientId: '1030343360675-j7f1arnvvfmaacod5jlvlfomor8kfeim.apps.googleusercontent.com',
+    iosBundleId: 'com.offeringmarketplace.app',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyA_lB2V6mg_sAQbGNAGJbaau9kcq1CDHH4',
+    appId: '1:1030343360675:web:f576e2674cfdb6b461bf16',
+    messagingSenderId: '1030343360675',
+    projectId: 'whales-fc802',
+    authDomain: 'whales-fc802.firebaseapp.com',
+    storageBucket: 'whales-fc802.appspot.com',
+    measurementId: 'G-SWDKM9RHPD',
+  );
+
 }

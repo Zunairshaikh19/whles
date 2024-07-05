@@ -33,7 +33,7 @@ class _VerifyFormStep2ViewState extends State<VerifyFormStep2View> {
     String postalCode = _postalCodeController.text.trim();
 
     try {
-      await _firestore.collection('onBoarding').doc(widget.documentId).update({
+      await _firestore.collection('onBoarding').doc(widget.documentId).set({
         'streetAddress': streetAddress,
         'city': city,
         'postalCode': postalCode,

@@ -351,6 +351,7 @@ class _CreateAccountState extends State<CreateAccount> {
                 hintTextColor: Colors.white,
               ),
               const SizedBox(height: 15),
+
               CustomTextField(
                 controller: passController,
                 hintText: 'Password',

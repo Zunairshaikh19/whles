@@ -21,17 +21,17 @@ class MostViewedContainer extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 189,
-            width: 108,
-            child: Image(
-              image: AssetImage(
-                mostViewedList.carouselImages.isNotEmpty
-                    ? mostViewedList.carouselImages[0]
-                    : "assets/placeholder_image.png",
-              ),
-              fit: BoxFit.cover,
-            ),
+          Image(
+            height: 140,
+            width: 130,
+            image: mostViewedList.carouselImages[0].contains("https:")
+                ? NetworkImage(
+                    mostViewedList.carouselImages[0],
+                  )
+                : AssetImage(
+                    mostViewedList.carouselImages[0],
+                  ) as ImageProvider<Object>,
+            fit: BoxFit.cover,
           ),
           const SizedBox(
             width: 10,

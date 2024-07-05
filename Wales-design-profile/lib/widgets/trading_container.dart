@@ -20,22 +20,18 @@ class TradingContainer extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          SizedBox(
-            height: 131,
-            width: 162,
-            child: ClipRRect(
-              borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(10), topRight: Radius.circular(10)),
-              child: Image(
-                image: AssetImage(
-                  tradingList.carouselImages.isNotEmpty
-                      ? tradingList.carouselImages[0]
-                      : "assets/placeholder_image.png",
-                ),
-                fit: BoxFit.cover,
-              ),
-            ),
-          ),
+           Image(
+             height: 130,
+             width: 130,
+             image: tradingList.carouselImages[0].contains("https:")
+                 ? NetworkImage(
+                     tradingList.carouselImages[0],
+                   )
+                 : AssetImage(
+                     tradingList.carouselImages[0],
+                   ) as ImageProvider<Object>,
+             fit: BoxFit.cover,
+           ),
           const SizedBox(
             width: 10,
           ),
