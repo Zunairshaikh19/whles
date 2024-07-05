@@ -1,10 +1,8 @@
-import 'package:app/home_screens/bottom_navigation.dart';
-import 'package:app/models/drop_down_menu_data.dart';
 import 'package:app/models/public_profile_model.dart';
 import 'package:app/welcome_screen/welcome_screen.dart';
-import 'package:app/widgets/drop_down_menu.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../app_theme.dart';
 import '../constants.dart';
@@ -39,6 +37,7 @@ class _CreateAccountState extends State<CreateAccount> {
   final List genderData = ['Male', 'Female', 'Other'];
   String selectedRole = 'Student';
   String selected = '';
+  String countryCode = "+92";
 
   @override
   void initState() {
@@ -71,6 +70,31 @@ class _CreateAccountState extends State<CreateAccount> {
           lastNameController.text.isNotEmpty &&
           phoneNoController.text.isNotEmpty;
     });
+  }
+
+  Widget phoneNumber() {
+    return Container(
+      height: 55,
+      padding: const EdgeInsets.only(top: 20,right: 10,bottom: 10,left: 10),
+      decoration: BoxDecoration(
+        border: Border.all(color: AppTheme.whiteColor,),
+      ),
+      child: IntlPhoneField(
+        controller: phoneNoController,
+        dropdownTextStyle: const TextStyle(color: Colors.white, fontSize: 15),
+        dropdownIcon: const Icon(
+          Icons.arrow_drop_down,
+          color: Colors.white,
+        ),
+        initialCountryCode: countryCode,
+        onChanged: (phone) {
+          
+        },
+        style: const TextStyle(
+          color: Colors.white,
+        ),
+      ),
+    );
   }
 
   // Future<void> register() async {
@@ -159,9 +183,9 @@ class _CreateAccountState extends State<CreateAccount> {
           id: userId,
           firstName: firstNameController.text.trim(),
           lastName: lastNameController.text.trim(),
-          phoneNo: phoneNoController.text.trim(),
+          phoneNo: '$countryCode${phoneNoController.text.trim()}',
           age: ageController.text.trim(),
-          gender: "Male",
+          gender: "",
           address: addressController.text.trim(),
           nationality: nationalityController.text.trim(),
           role: selectedRole,
@@ -295,12 +319,7 @@ class _CreateAccountState extends State<CreateAccount> {
                 hintTextColor: Colors.white,
               ),
               const SizedBox(height: 15),
-              CustomTextField(
-                controller: phoneNoController,
-                prefixIcon: '',
-                hintText: 'Phone Number',
-                hintTextColor: Colors.white,
-              ),
+              phoneNumber(),
               const SizedBox(height: 15),
               CustomTextField(
                 controller: addressController,
@@ -312,6 +331,7 @@ class _CreateAccountState extends State<CreateAccount> {
               const SizedBox(height: 15),
               CustomTextField(
                 controller: ageController,
+                textInputType: TextInputType.number,
                 prefixIcon: '',
                 hintText: 'Age',
                 hintTextColor: Colors.white,
@@ -323,15 +343,7 @@ class _CreateAccountState extends State<CreateAccount> {
                 hintText: 'Nationality',
                 hintTextColor: Colors.white,
               ),
-              // DropdownButton(
-              //   items:  [
-              //     for(var item in genderData)
-              //     DropdownMenuItem(
-              //      child:  Text(item.toString()),
-              //     )
-              //   ],
-              //   onChanged: (value) {},
-              //   ),
+              const SizedBox(height: 15),
               CustomTextField(
                 controller: emailController,
                 prefixIcon: '',

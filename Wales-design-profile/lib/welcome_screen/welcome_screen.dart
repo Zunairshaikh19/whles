@@ -1,8 +1,8 @@
 import 'package:app/home_screens/bottom_navigation.dart';
+import 'package:app/models/public_profile_model.dart';
 import 'package:app/models/trading_model.dart';
 import 'package:app/profile/create_account.dart';
 import 'package:app/widgets/custom_text_field.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -44,7 +44,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   }
 
   void login() async {
-    if(emailController.text.isEmpty || passController.text.isEmpty){
+    if (emailController.text.isEmpty || passController.text.isEmpty) {
       Constants.showMessage(context, "Please fill all fields");
       return;
     }
@@ -53,13 +53,14 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
     });
 
     UserCredential userCredential =
-          await FirebaseAuth.instance.signInWithEmailAndPassword(
-        email: emailController.text,
-        password: passController.text,
-      );
-    
+        await FirebaseAuth.instance.signInWithEmailAndPassword(
+      email: emailController.text,
+      password: passController.text,
+    );
+
     if (userCredential.user != null) {
       await TradingModel.addingAlll();
+      SaveduserId = userCredential.user!.uid;
       SharedPreferences prefs = await SharedPreferences.getInstance();
       await prefs.setString('userId', userCredential.user!.uid);
       await prefs.setString('email', emailController.text);
@@ -152,60 +153,38 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   //   // });
   // }
 
-  GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
 
   _handleSignIn() async {
     try {
+      print("sssssssssssss 1");
       await _googleSignIn.signIn();
-      // If sign in was successful, you can get details about the user
-      print("_googleSignIn.currentUser ${_googleSignIn.currentUser}");
+      print("sssssssssssss 2");
       GoogleSignInAccount? user = _googleSignIn.currentUser;
+      PublicProfileModel profileModel = PublicProfileModel.empty();
       if (user != null) {
-        // Access user details
-        String displayName = user.displayName ?? "";
-        String email = user.email ?? "";
-        String userId = user.id;
-
-        // Firestore instance
-        FirebaseFirestore firestore = FirebaseFirestore.instance;
-
-        // Check if the user document already exists
-        DocumentReference userDocRef =
-            firestore.collection('users').doc(userId);
-        DocumentSnapshot userDoc = await userDocRef.get();
-
-        if (!userDoc.exists) {
-          // User document does not exist, save user details to Firestore
-          await userDocRef.set({
-            'displayName': displayName,
-            'email': email,
-            'userId': userId,
-            // You can add more fields here as needed
-          });
-
-          SaveduserId = userId;
-          SharedPreferences prefs = await SharedPreferences.getInstance();
-          await prefs.setString('userId', email);
-          print('User data saved to Firestore successfully!');
-        } else {
-          print('User data already exists in Firestore.');
-        }
-        SaveduserId = userId;
-
+        profileModel.firstName = user.displayName ?? '';
+        profileModel.email = user.email;
+        profileModel.profileUrl =
+            user.photoUrl ?? 'https://www.w3schools.com/howto/img_avatar.png';
+        profileModel.id = user.id;
+        await PublicProfileModel.addPublicProfile(profileModel);
+        SaveduserId = user.id;
         SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userId', SaveduserId);
+        await prefs.setString('userId', user.id);
+        await prefs.setString('email', user.email);
       } else {
-        print('No user signed in.');
+       Get.snackbar("Alert", 'User not found');
       }
       goToUserType();
     } catch (error) {
-      print(error);
+      Get.snackbar('Error', '$error');
     }
   }
 
-  _handleSignOut() async {
-    await _googleSignIn.signOut();
-    print('User signed out');
+  handleSignOut() async {
+    final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email']);
+    await googleSignIn.signOut();
   }
 
   @override
@@ -299,7 +278,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 isButtonEnable: isButtonEnabled,
                 height: 56,
                 onPress: login,
-                text: loading ? "Signing in....": "Sign In",
+                text: loading ? "Signing in...." : "Sign In",
                 fontColorAlt: Colors.black,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,

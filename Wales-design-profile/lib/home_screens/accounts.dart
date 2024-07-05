@@ -1,4 +1,3 @@
-import 'package:app/Global/variable.dart';
 import 'package:app/constants.dart';
 import 'package:app/widgets/accounts_tiles.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';

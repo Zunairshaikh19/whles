@@ -3,8 +3,10 @@ import 'package:app/profile/views/verify_form_step2_view.dart';
 import 'package:app/profile/widgets/form_progress_indicator.dart';
 import 'package:app/widgets/custom_buttons.dart';
 import 'package:app/widgets/custom_text_form_field.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class VerifyFormStep1View extends StatefulWidget {
   const VerifyFormStep1View({Key? key}) : super(key: key);
@@ -32,7 +34,8 @@ class _VerifyFormStep1ViewState extends State<VerifyFormStep1View> {
         'firstName': firstName,
         'lastName': lastName,
       });
-      String documentId = docRef.id; // Get the ID of the newly created document
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      String documentId = prefs.getString('userId') ?? '';
       Navigator.of(context).push(
         MaterialPageRoute(
           builder: (_) {

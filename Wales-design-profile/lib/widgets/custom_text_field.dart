@@ -14,10 +14,12 @@ class CustomTextField extends StatelessWidget {
   final String hintText;
   final Widget? widget;
   final String prefixIcon;
+  final String? prefixText;
   final int? maxlines;
   final Color? hintTextColor;
   final Icon? trailingIcon;
   final int? maxlength;
+  final bool readOnly ;
   const CustomTextField({
     super.key,
     this.textAlign = TextAlign.start,
@@ -27,9 +29,11 @@ class CustomTextField extends StatelessWidget {
     this.fieldName,
     this.isPass = false,
     this.isObscure = false,
+    this.readOnly = false,
     this.isForgotPass = false,
     this.showIcon = false,
     this.height = 0.05,
+    this.prefixText,
     this.hintText = 'What is Happening?',
     this.widget,
     required this.prefixIcon,
@@ -55,9 +59,11 @@ class CustomTextField extends StatelessWidget {
             maxLines: maxlines,
             textAlign: textAlign,
             obscureText: isObscure,
+            readOnly: readOnly,
             textCapitalization: TextCapitalization.sentences,
             keyboardType: textInputType,
             controller: controller,
+          
             style: TextStyle(
               color: hintTextColor == AppTheme.whiteColor
                   ? AppTheme.whiteColor
@@ -67,7 +73,7 @@ class CustomTextField extends StatelessWidget {
             ),
             cursorColor: AppTheme.blackColor,
             decoration: Constants.getInputDecoration(
-                hintText, isPass, widget, prefixIcon, hintTextColor)),
+                hintText, isPass,prefixText, widget, prefixIcon, hintTextColor,)),
 
         // SizedBox(
         //   height: MediaQuery.sizeOf(context).height * 0.015,

@@ -86,7 +86,7 @@ class _AllState extends State<All> {
         WidgetsBinding.instance?.addPostFrameCallback((_) {
           // Show snack bar indicating no properties found
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
+            const  SnackBar(
               content: Text('No properties found.'),
             ),
           );
@@ -147,8 +147,8 @@ class _AllState extends State<All> {
                     showView: true,
                   ),
                   SizedBox(
-                    height: 210,
-                    child: TradingList(tradingList: tradingList),
+                    height: 209,
+                    child: MostViewedList(mostViewList: mostViewList),
                   ),
                   const SizedBox(
                     height: 30,

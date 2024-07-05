@@ -16,8 +16,10 @@ class CustomTextFormField extends StatelessWidget {
   final bool readOnly;
   final Color? fillColor;
   final int maxLines;
+  final int? maxLength;
   final bool showErrorMessage;
   final String suffixText;
+  final String? prefixText;
   final Function()? onTap;
   final TextInputType keyBoardType;
   final Function(String?)? validator;
@@ -57,9 +59,11 @@ class CustomTextFormField extends StatelessWidget {
       this.horizontalMargin = 0,
       this.verticalMargin = 0,
       this.suffixText = '',
+      this.prefixText = '',
       this.validator,
       this.onTap,
       this.maxLines = 1,
+      this.maxLength,
       this.radius = 5,
       this.keyBoardType = TextInputType.text,
       this.inputFormatters = const [],
@@ -87,6 +91,7 @@ class CustomTextFormField extends StatelessWidget {
         readOnly: readOnly,
         onTap: onTap,
         maxLines: maxLines,
+        maxLength: maxLength,
         inputFormatters: inputFormatters,
         textInputAction: textInputAction,
         textAlign: textAlign,
@@ -105,6 +110,7 @@ class CustomTextFormField extends StatelessWidget {
           errorStyle: !showErrorMessage ? const TextStyle(height: 0) : null,
           hintStyle: hintStyle ?? robotoCondensedRegular.copyWith(color: AppColors.darkGrey, fontSize: 15),
           suffixText: suffixText,
+          prefixText: prefixText,
           suffixIcon: isSuffixIcon
               ? IconButton(
                   onPressed: () {

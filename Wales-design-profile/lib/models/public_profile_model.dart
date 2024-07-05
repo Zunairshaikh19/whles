@@ -26,20 +26,22 @@ class PublicProfileModel {
     required this.email,
     required this.profileUrl,
   });
+
+  PublicProfileModel.empty();
   
  
   factory PublicProfileModel.fromFirestore(
       DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
     return PublicProfileModel(
-      id: doc.id,
+      id: data['uid'] ?? "",
       firstName:  data['firstName'] ?? "",
       lastName:  data['lastName'] ?? "",
       phoneNo:  data['phoneNo'] ?? "",
       age:  data['age'] ?? "",
       address:  data['address'] ?? "",
       gender:  data['gender'] ?? "",
-      nationality:  data['nationality'] ?? "", 
+      nationality:  data['national'] ?? "", 
       role:  data['role'] ?? "",
       email:  data['email'] ?? "",
       profileUrl:  data['profileUrl'] ?? "",
@@ -56,11 +58,11 @@ class PublicProfileModel {
         if (value.exists) {
           return PublicProfileModel.fromFirestore(value);
         } else {
-          return null;
+          return PublicProfileModel.empty();
         }
       });
     } catch (e) {
-      return null;
+      return PublicProfileModel.empty();
     }
   }
 
@@ -70,6 +72,7 @@ class PublicProfileModel {
           .collection('users')
           .doc(publicProfile.id)
           .set({
+        'uid': publicProfile.id, // 'id' is the document id, not the user id
         'firstName': publicProfile.firstName,
         'lastName': publicProfile.lastName,
         'phoneNo': publicProfile.phoneNo,
