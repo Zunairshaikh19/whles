@@ -12,6 +12,7 @@ import 'package:app/profile/views/legal_profile_view.dart';
 import 'package:app/profile/views/personal_profile_view.dart';
 import 'package:app/profile/views/user_profile_view.dart';
 import 'package:app/profile/views/verify_profile_view.dart';
+import 'package:app/welcome_screen/welcome_screen.dart';
 import 'package:app/widgets/profile_cards.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -117,13 +118,16 @@ class _ProfileState extends State<Profile> {
     await Navigator.of(context).pushReplacement(
       MaterialPageRoute(
         builder: (_) {
-          return const OnBoardingMainPage();
+          return const WelcomeScreen();
         },
       ),
     );
   }
 
   void goToAccounts(BuildContext context, int index) {
+    if(index == 7){
+      logout();
+    }
     setState(() {
       Navigator.of(context)
           .push(MaterialPageRoute(builder: (context) => profileScreens[index]));

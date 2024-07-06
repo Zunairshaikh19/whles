@@ -1,33 +1,41 @@
 {
   "project_info": {
-    "project_number": "1030343360675",
-    "project_id": "whales-fc802",
-    "storage_bucket": "whales-fc802.appspot.com"
+    "project_number": "973470097911",
+    "project_id": "walls-9a8d5",
+    "storage_bucket": "walls-9a8d5.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:1030343360675:android:29706028b894348561bf16",
+        "mobilesdk_app_id": "1:973470097911:android:d03b8ef4dc80373bf94ef2",
         "android_client_info": {
           "package_name": "com.offeringmarketplace.app"
         }
       },
       "oauth_client": [
         {
-          "client_id": "1030343360675-db3tao9hu9gfhd5s9qha6qur1fndl6b9.apps.googleusercontent.com",
+          "client_id": "973470097911-d164foi3cfbrfp3n7d72ftlnaek2eskh.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.offeringmarketplace.app",
+            "certificate_hash": "507c65c9a0bfc36251f23c5a3b86dbd9be1f41a9"
+          }
+        },
+        {
+          "client_id": "973470097911-l5n356lthtkdnfphisim2kd9o580pm9i.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCarBUs9RFr-V0tsoSjSH3WE3kr996iQsc"
+          "current_key": "AIzaSyDW6xS4WIsONykk_sZdj3WaY8YHp6YSIaU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1030343360675-6djncgce5bemr9od2nknmdhoelrocbil.apps.googleusercontent.com",
+              "client_id": "973470097911-l5n356lthtkdnfphisim2kd9o580pm9i.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

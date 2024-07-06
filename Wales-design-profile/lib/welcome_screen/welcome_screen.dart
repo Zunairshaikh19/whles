@@ -157,9 +157,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
 
   _handleSignIn() async {
     try {
-      print("sssssssssssss 1");
       await _googleSignIn.signIn();
-      print("sssssssssssss 2");
       GoogleSignInAccount? user = _googleSignIn.currentUser;
       PublicProfileModel profileModel = PublicProfileModel.empty();
       if (user != null) {
@@ -173,18 +171,17 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
         SharedPreferences prefs = await SharedPreferences.getInstance();
         await prefs.setString('userId', user.id);
         await prefs.setString('email', user.email);
+        goToUserType();
       } else {
-       Get.snackbar("Alert", 'User not found');
+        Get.snackbar("Alert", 'User not found');
       }
-      goToUserType();
     } catch (error) {
       Get.snackbar('Error', '$error');
     }
   }
 
   handleSignOut() async {
-    final GoogleSignIn googleSignIn = GoogleSignIn(scopes: ['email']);
-    await googleSignIn.signOut();
+    await _googleSignIn.signOut();
   }
 
   @override
