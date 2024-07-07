@@ -50,19 +50,21 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyA7wWXI3VWAFdtvY3x9SDhSC8dYClZkf3Q',
-    appId: '1:973470097911:web:931feb5d27e4b8d5f94ef2',
-    messagingSenderId: '973470097911',
-    projectId: 'walls-9a8d5',
-    authDomain: 'walls-9a8d5.firebaseapp.com',
-    storageBucket: 'walls-9a8d5.appspot.com',
+    apiKey: 'AIzaSyDqo95V5uPgRUK1JgM5lp8mJTtXIRMUs4Q',
+    appId: '1:1030343360675:web:ec82f3a79f87508161bf16',
+    messagingSenderId: '1030343360675',
+    projectId: 'whales-fc802',
+    authDomain: 'whales-fc802.firebaseapp.com',
+    storageBucket: 'whales-fc802.appspot.com',
+    measurementId: 'G-PD0T0XSC1M',
   );
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyDW6xS4WIsONykk_sZdj3WaY8YHp6YSIaU',
-    appId: '1:973470097911:android:d03b8ef4dc80373bf94ef2',
-    messagingSenderId: '973470097911',
-    projectId: 'walls-9a8d5',
-    storageBucket: 'walls-9a8d5.appspot.com',
+    apiKey: 'AIzaSyA50NjVkwDNckRvYtLY964AAcYxglqRVes',
+    appId: '1:1030343360675:android:29706028b894348561bf16',
+    messagingSenderId: '1030343360675',
+    projectId: 'whales-fc802',
+    storageBucket: 'whales-fc802.appspot.com',
   );
+
 }

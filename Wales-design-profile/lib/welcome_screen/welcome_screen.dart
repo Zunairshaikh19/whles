@@ -152,29 +152,59 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   //   //   Constants.showMessage(context, onError.message);
   //   // });
   // }
+  final GoogleSignIn _googleSignIn = GoogleSignIn(
+    scopes: <String>[
+      'email',
+    ],
+    clientId: "1030343360675-9au0i57vac7h9g63a5pgn82betk218gc.apps.googleusercontent.com"
+  );
+  final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
+  Future<User?> _signInWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) {
+        return null; // User cancelled the sign-in
+      }
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential =
+          await _auth.signInWithCredential(credential);
+      return userCredential.user;
+    } catch (e) {
+      print(e);
+      return null;
+    }
+  }
+
+  // final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
 
   _handleSignIn() async {
     try {
-      await _googleSignIn.signIn();
-      GoogleSignInAccount? user = _googleSignIn.currentUser;
-      PublicProfileModel profileModel = PublicProfileModel.empty();
-      if (user != null) {
-        profileModel.firstName = user.displayName ?? '';
-        profileModel.email = user.email;
-        profileModel.profileUrl =
-            user.photoUrl ?? 'https://www.w3schools.com/howto/img_avatar.png';
-        profileModel.id = user.id;
-        await PublicProfileModel.addPublicProfile(profileModel);
-        SaveduserId = user.id;
-        SharedPreferences prefs = await SharedPreferences.getInstance();
-        await prefs.setString('userId', user.id);
-        await prefs.setString('email', user.email);
-        goToUserType();
-      } else {
+      User? user = await _signInWithGoogle();
+      if (user == null) {
         Get.snackbar("Alert", 'User not found');
+        return;
       }
+      PublicProfileModel profileModel = PublicProfileModel.empty();
+      profileModel.firstName = user.displayName ?? '';
+      profileModel.email = user.email ?? '';
+      profileModel.profileUrl =
+          user.photoURL ?? 'https://www.w3schools.com/howto/img_avatar.png';
+      profileModel.id = user.uid;
+      await PublicProfileModel.addPublicProfile(profileModel);
+      SaveduserId = user.uid;
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      await prefs.setString('userId', user.uid);
+      await prefs.setString('email', user.email ?? '');
+      goToUserType();
     } catch (error) {
       Get.snackbar('Error', '$error');
     }
@@ -321,7 +351,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               CustomButton(
                 isButtonEnable: true,
                 height: 56,
-                onPress: goToUserType,
+                onPress: () {},
                 text: "Continue with Apple",
                 fontColor: AppTheme.whiteColor,
                 fontSize: 16,
@@ -351,7 +381,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               CustomButton(
                 isButtonEnable: true,
                 height: 56,
-                onPress: goToUserType,
+                onPress: () {},
                 text: "Continue with Facebook",
                 fontColor: AppTheme.whiteColor,
                 fontSize: 16,
