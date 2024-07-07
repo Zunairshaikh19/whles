@@ -14,20 +14,28 @@
       },
       "oauth_client": [
         {
-          "client_id": "1030343360675-db3tao9hu9gfhd5s9qha6qur1fndl6b9.apps.googleusercontent.com",
+          "client_id": "1030343360675-9au0i57vac7h9g63a5pgn82betk218gc.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.offeringmarketplace.app",
+            "certificate_hash": "1c5b71800b5c091c32929f1e1468cebdfcfd1933"
+          }
+        },
+        {
+          "client_id": "1030343360675-klhvifjn9v6kchplo6kp1gnnsvjv4api.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyCarBUs9RFr-V0tsoSjSH3WE3kr996iQsc"
+          "current_key": "AIzaSyA50NjVkwDNckRvYtLY964AAcYxglqRVes"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "1030343360675-6djncgce5bemr9od2nknmdhoelrocbil.apps.googleusercontent.com",
+              "client_id": "1030343360675-klhvifjn9v6kchplo6kp1gnnsvjv4api.apps.googleusercontent.com",
               "client_type": 3
             }
           ]
