@@ -52,7 +52,8 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       loading = true;
     });
 
-    UserCredential userCredential =
+   try{
+     UserCredential userCredential =
         await FirebaseAuth.instance.signInWithEmailAndPassword(
       email: emailController.text,
       password: passController.text,
@@ -67,6 +68,15 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
       goToUserType();
     } else {
       Constants.showMessage(context, "Wrong Credentials");
+    }
+    setState(() {
+      loading = false;
+    });
+   }catch(e){
+    setState(() {
+      loading = false;
+    });
+     Constants.showMessage(context, e.toString());
     }
     // SharedPreferences prefs = await SharedPreferences.getInstance();
     // String? userId = prefs.getString('userId');
@@ -152,58 +162,71 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   //   //   Constants.showMessage(context, onError.message);
   //   // });
   // }
-  final GoogleSignIn _googleSignIn = GoogleSignIn(
-    scopes: <String>[
-      'email',
-    ],
-    clientId: "1030343360675-9au0i57vac7h9g63a5pgn82betk218gc.apps.googleusercontent.com"
-  );
+  // final GoogleSignIn _googleSignIn = GoogleSignIn();
+  // final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // Future<User?> _signInWithGoogle() async {
+  //   try {
+  //     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+  //     if (googleUser == null) {
+  //       return null; // User cancelled the sign-in
+  //     }
+
+  //     final GoogleSignInAuthentication googleAuth =
+  //         await googleUser.authentication;
+
+  //     final AuthCredential credential = GoogleAuthProvider.credential(
+  //       accessToken: googleAuth.accessToken,
+  //       idToken: googleAuth.idToken,
+  //     );
+
+  //     final UserCredential userCredential =
+  //         await _auth.signInWithCredential(credential);
+  //     return userCredential.user;
+  //   } catch (e) {
+  //     print(e);
+  //     return null;
+  //   }
+  // }
+
   final FirebaseAuth _auth = FirebaseAuth.instance;
+   Future<UserCredential> signInWithGoogle() async {
+    final GoogleSignInAccount? googleSignInAccount =
+        await GoogleSignIn().signIn();
 
-  Future<User?> _signInWithGoogle() async {
-    try {
-      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
-      if (googleUser == null) {
-        return null; // User cancelled the sign-in
-      }
+    final GoogleSignInAuthentication? googleSignInAuthentication =
+        await googleSignInAccount?.authentication;
 
-      final GoogleSignInAuthentication googleAuth =
-          await googleUser.authentication;
+    final OAuthCredential oAuthCredential = GoogleAuthProvider.credential(
+      idToken: googleSignInAuthentication?.idToken,
+      accessToken: googleSignInAuthentication?.accessToken,
+    );
 
-      final AuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: googleAuth.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      final UserCredential userCredential =
-          await _auth.signInWithCredential(credential);
-      return userCredential.user;
-    } catch (e) {
-      print(e);
-      return null;
-    }
+    final UserCredential userCredential =
+        await _auth.signInWithCredential(oAuthCredential);
+    return userCredential;
   }
 
-  // final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
+
+  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: ['email']);
 
   _handleSignIn() async {
     try {
-      User? user = await _signInWithGoogle();
-      if (user == null) {
-        Get.snackbar("Alert", 'User not found');
-        return;
-      }
+      UserCredential userCredential = await signInWithGoogle();
+      if(userCredential.user == null) return;
+
+      User googleUser = userCredential.user!;
       PublicProfileModel profileModel = PublicProfileModel.empty();
-      profileModel.firstName = user.displayName ?? '';
-      profileModel.email = user.email ?? '';
+      profileModel.firstName = googleUser.displayName ?? '';
+      profileModel.email = googleUser.email ?? '';
       profileModel.profileUrl =
-          user.photoURL ?? 'https://www.w3schools.com/howto/img_avatar.png';
-      profileModel.id = user.uid;
+          googleUser.photoURL ?? 'https://www.w3schools.com/howto/img_avatar.png';
+      profileModel.id = googleUser.uid;
       await PublicProfileModel.addPublicProfile(profileModel);
-      SaveduserId = user.uid;
+      SaveduserId = googleUser.uid;
       SharedPreferences prefs = await SharedPreferences.getInstance();
-      await prefs.setString('userId', user.uid);
-      await prefs.setString('email', user.email ?? '');
+      await prefs.setString('userId', googleUser.uid);
+      await prefs.setString('email', googleUser.email ?? '');
       goToUserType();
     } catch (error) {
       Get.snackbar('Error', '$error');
